@@ -3,895 +3,887 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MailBot — Envío Real</title>
+<title>MailBot EOS — Panel de Envíos</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --bg: #08080f;
-    --surface: #0f0f1a;
-    --border: #1e1e30;
-    --accent: #6c4ef2;
-    --accent2: #a78bfa;
-    --green: #3dd68c;
-    --red: #f87171;
-    --text: #e4e2f0;
-    --muted: #555;
-    --mono: 'DM Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
-
-  body {
-    font-family: var(--sans);
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-  }
-
-  /* ── SIDEBAR ── */
-  aside {
-    width: 230px;
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    flex-shrink: 0;
-  }
-  .logo {
-    padding: 26px 24px 22px;
-    border-bottom: 1px solid var(--border);
-  }
-  .logo h1 { font-size: 22px; font-weight: 800; letter-spacing: -1px; }
-  .logo h1 span { color: var(--accent2); }
-  .logo p { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 3px; }
-
-  nav { padding: 12px 0; flex: 1; }
-  nav a {
-    display: block;
-    padding: 11px 24px;
-    cursor: pointer;
-    color: var(--muted);
-    font-size: 13px;
-    font-weight: 600;
-    border-left: 3px solid transparent;
-    transition: all .15s;
-    text-decoration: none;
-  }
-  nav a.active, nav a:hover { color: var(--text); background: #14142a; border-left-color: var(--accent); }
-
-  .sidebar-foot {
-    padding: 16px;
-    border-top: 1px solid var(--border);
-  }
-  .plan-badge {
-    background: #1a1030;
-    border: 1px solid #3d2a7a;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 11px;
-  }
-  .plan-badge strong { color: var(--accent2); display: block; margin-bottom: 3px; letter-spacing: 1px; }
-  .plan-badge span { color: #777; }
-
-  /* ── MAIN ── */
-  main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  header {
-    padding: 18px 32px;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  header h2 { font-size: 20px; font-weight: 800; }
-  .content {
-    padding: 28px 32px;
-    overflow-y: auto;
-    flex: 1;
-  }
-
-  /* ── TABS ── */
-  .tab { display: none; }
-  .tab.active { display: block; }
-
-  /* ── CARDS ── */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 22px 26px;
-    margin-bottom: 18px;
-  }
-  .card-title {
-    font-size: 15px;
-    font-weight: 700;
-    margin-bottom: 18px;
-  }
-
-  /* ── FORM ── */
-  label { display: block; font-size: 11px; color: #666; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
-  input, textarea, select {
-    width: 100%;
-    background: #08080f;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    color: var(--text);
-    padding: 10px 14px;
-    font-family: var(--sans);
-    font-size: 13px;
-    outline: none;
-    transition: border-color .15s;
-  }
-  input:focus, textarea:focus, select:focus { border-color: var(--accent); }
-  textarea { font-family: var(--mono); font-size: 13px; resize: vertical; line-height: 1.7; }
-  .field { margin-bottom: 16px; }
-
-  /* ── TAGS ── */
-  .var-tag {
-    display: inline-block;
-    background: #1a1030;
-    border: 1px solid #3d2a7a;
-    color: var(--accent2);
-    border-radius: 6px;
-    padding: 3px 10px;
-    font-size: 12px;
-    font-family: var(--mono);
-    cursor: pointer;
-    margin: 0 4px 6px 0;
-    transition: background .1s;
-    user-select: none;
-  }
-  .var-tag:hover { background: #2a1050; }
-
-  /* ── BUTTONS ── */
-  .btn {
-    padding: 10px 22px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-family: var(--sans);
-    font-weight: 700;
-    font-size: 13px;
-    transition: opacity .15s, transform .1s;
-  }
-  .btn:active { transform: scale(.97); }
-  .btn-primary { background: var(--accent); color: #fff; }
-  .btn-primary:hover { opacity: .88; }
-  .btn-primary:disabled { opacity: .4; cursor: not-allowed; }
-  .btn-ghost { background: #1e1e2e; color: var(--text); }
-  .btn-ghost:hover { background: #252538; }
-  .btn-outline { background: transparent; color: var(--accent2); border: 1px solid var(--accent); }
-  .btn-outline:hover { background: #1a1030; }
-  .btn-danger { background: #3a1010; color: var(--red); border: 1px solid #5a2020; }
-
-  /* ── TABLE ── */
-  table { width: 100%; border-collapse: collapse; }
-  th { text-align: left; padding: 10px 14px; font-size: 11px; color: #444; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-  td { padding: 12px 14px; border-bottom: 1px solid #111; font-size: 13px; color: #bbb; }
-  td.bold { color: #fff; font-weight: 600; }
-  td.mono { font-family: var(--mono); font-size: 12px; }
-
-  /* ── BADGE ── */
-  .badge {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 700;
-  }
-  .badge-green { background: #0d2918; color: var(--green); border: 1px solid #1a4731; }
-  .badge-gray  { background: #1a1a2a; color: #555;       border: 1px solid #2a2a3a; }
-  .badge-purple{ background: #1a1030; color: var(--accent2); border: 1px solid #3d2a7a; }
-
-  /* ── PREVIEW ── */
-  .preview-box {
-    background: #06060d;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    overflow: hidden;
-  }
-  .preview-header {
-    background: #101018;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-  }
-  .preview-from { font-size: 11px; color: var(--muted); font-family: var(--mono); }
-  .preview-subject { font-size: 13px; font-weight: 700; color: #fff; margin-top: 4px; }
-  .preview-body {
-    padding: 18px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: #aaa;
-    white-space: pre-wrap;
-    line-height: 1.8;
-    min-height: 200px;
-  }
-
-  /* ── ROW LAYOUT ── */
-  .row { display: flex; gap: 16px; align-items: flex-start; }
-  .col { flex: 1; }
-  .col-2 { flex: 2; }
-
-  /* ── STATS GRID ── */
-  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-  .stat-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
-  .stat-val { font-size: 30px; font-weight: 800; color: #fff; }
-  .stat-sub { font-size: 11px; color: var(--accent2); margin-top: 4px; }
-
-  /* ── NOTIFICATION ── */
-  #toast {
-    position: fixed; bottom: 24px; right: 24px;
-    padding: 14px 22px;
-    border-radius: 10px;
-    font-weight: 700;
-    font-size: 13px;
-    z-index: 999;
-    display: none;
-    transition: opacity .3s;
-  }
-  #toast.success { background: #0d2918; border: 1px solid #1a4731; color: var(--green); }
-  #toast.error   { background: #2a0d0d; border: 1px solid #4a1a1a; color: var(--red); }
-
-  /* ── SETUP CALLOUT ── */
-  .setup-callout {
-    background: #1a1030;
-    border: 1px solid #3d2a7a;
-    border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    font-size: 13px;
-    line-height: 1.7;
-  }
-  .setup-callout strong { color: var(--accent2); }
-  .setup-callout a { color: var(--accent2); }
-
-  /* ── SEND PROGRESS ── */
-  .progress-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 0;
-    font-size: 13px;
-    font-family: var(--mono);
-    border-bottom: 1px solid #111;
-  }
-  .progress-item .icon { font-size: 16px; width: 20px; text-align: center; }
-  .sending-spinner {
-    width: 14px; height: 14px;
-    border: 2px solid #333;
-    border-top-color: var(--accent2);
-    border-radius: 50%;
-    animation: spin .6s linear infinite;
-    display: inline-block;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* ── CODE BLOCK ── */
-  pre {
-    background: #03030a;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 16px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: #7dd3fc;
-    overflow-x: auto;
-    line-height: 1.7;
-  }
-
-  code.hl { color: #a78bfa; }
-  code.str { color: #86efac; }
-
-  /* ── SCROLLBAR ── */
-  ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #2a2a3e; border-radius: 3px; }
-
-  @media (max-width: 900px) {
-    aside { width: 58px; }
-    aside .logo p, aside nav a span, aside .sidebar-foot { display: none; }
-    nav a { padding: 14px; font-size: 18px; }
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .row { flex-direction: column; }
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #07070e; --surface: #0e0e1c; --surface2: #13132a;
+  --border: #1c1c32; --accent: #6c4ef2; --accent2: #a78bfa;
+  --green: #22c55e; --red: #f87171; --yellow: #fbbf24; --blue: #38bdf8;
+  --text: #e4e2f0; --muted: #4a4a6a;
+  --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
+}
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+aside { width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
+.logo { padding: 28px 24px 20px; border-bottom: 1px solid var(--border); }
+.logo h1 { font-size: 24px; font-weight: 800; letter-spacing: -1.5px; }
+.logo h1 em { color: var(--accent2); font-style: normal; }
+.logo p { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 4px; text-transform: uppercase; letter-spacing: 2px; }
+nav { padding: 10px 0; flex: 1; }
+nav a { display: flex; align-items: center; gap: 10px; padding: 12px 22px; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600; border-left: 3px solid transparent; transition: all .15s; }
+nav a .ni { font-size: 15px; width: 18px; text-align: center; }
+nav a.active, nav a:hover { color: var(--text); background: #16162e; border-left-color: var(--accent); }
+.sidebar-stats { padding: 16px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ss-card { background: #0a0a1a; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.ss-label { font-size: 9px; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-family: var(--mono); }
+.ss-val { font-size: 20px; font-weight: 800; }
+main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+header { padding: 18px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+header h2 { font-size: 20px; font-weight: 800; }
+.content { padding: 28px 32px; overflow-y: auto; flex: 1; }
+.tab { display: none; }
+.tab.active { display: block; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 26px; margin-bottom: 18px; }
+.card-title { font-size: 15px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.card-title small { font-size: 11px; color: var(--muted); font-family: var(--mono); font-weight: 400; }
+label { display: block; font-size: 10px; color: #555; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+input, textarea, select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 14px; font-family: var(--sans); font-size: 13px; outline: none; transition: border-color .2s; }
+input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+textarea { font-family: var(--mono); font-size: 12px; resize: vertical; line-height: 1.75; }
+.field { margin-bottom: 16px; }
+.btn { padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; font-family: var(--sans); font-weight: 700; font-size: 12px; transition: all .15s; white-space: nowrap; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #7c5ef2; }
+.btn-primary:disabled { opacity: .35; cursor: not-allowed; }
+.btn-ghost { background: #1a1a2e; color: var(--text); }
+.btn-ghost:hover { background: #22223a; }
+.btn-outline { background: transparent; color: var(--accent2); border: 1px solid #3d2a7a; }
+.btn-outline:hover { background: #1a1030; }
+.btn-danger { background: #2a0d0d; color: var(--red); border: 1px solid #4a1a1a; }
+.btn-green { background: #0d2918; color: var(--green); border: 1px solid #1a4731; }
+.btn-green:hover { background: #112e1e; }
+.btn-yellow { background: #2a1e00; color: var(--yellow); border: 1px solid #4a3800; }
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink:0; }
+.b-activo    { background: #0a2018; color: var(--green);   border: 1px solid #1a4028; }
+.b-activo::before { background: var(--green); }
+.b-inactivo  { background: #1e1a08; color: var(--yellow);  border: 1px solid #3a3010; }
+.b-inactivo::before { background: var(--yellow); }
+.b-suscrito  { background: #0d2918; color: var(--green);   border: 1px solid #1a4731; }
+.b-suscrito::before { background: var(--green); }
+.b-habilitado{ background: #1a1030; color: var(--accent2); border: 1px solid #3d2a7a; }
+.b-habilitado::before { background: var(--accent2); }
+.b-desuscrito{ background: #1a1a2a; color: #555;           border: 1px solid #2a2a3a; }
+.b-desuscrito::before { background: #555; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 10px 14px; font-size: 10px; color: #3a3a5a; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
+td { padding: 11px 14px; border-bottom: 1px solid #0d0d1a; font-size: 13px; color: #b0aac8; }
+td.bold { color: #fff; font-weight: 600; }
+td.mono { font-family: var(--mono); font-size: 11px; }
+tr:hover td { background: #0f0f20; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; overflow: hidden; position: relative; }
+.stat-card::after { content:''; position:absolute; inset:0; background: radial-gradient(circle at top right, var(--glow,transparent) 0%, transparent 70%); pointer-events:none; }
+.stat-card.g { --glow: #22c55e18; } .stat-card.y { --glow: #fbbf2418; }
+.stat-card.b { --glow: #38bdf818; } .stat-card.p { --glow: #6c4ef218; }
+.stat-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
+.stat-val { font-size: 36px; font-weight: 800; line-height: 1; }
+.stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: var(--mono); }
+.drop-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all .2s; }
+.drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: #120d2a; }
+.drop-icon { font-size: 40px; margin-bottom: 12px; }
+.drop-zone p { font-size: 13px; color: #666; line-height: 1.6; }
+.drop-zone strong { color: var(--accent2); }
+.filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.filter-bar input, .filter-bar select { max-width: 200px; font-size: 12px; padding: 8px 12px; }
+.fchip { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s; font-family: var(--sans); white-space: nowrap; }
+.fchip:hover { border-color: var(--accent); color: var(--text); }
+.fchip.on     { background: var(--accent);  border-color: var(--accent);  color: #fff; }
+.fchip.on-g   { background: #0d2918; border-color: #1a4731; color: var(--green); }
+.fchip.on-y   { background: #2a1e00; border-color: #4a3800; color: var(--yellow); }
+.count-pill { margin-left: auto; font-size: 11px; color: var(--muted); font-family: var(--mono); background: #0a0a18; border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; white-space: nowrap; }
+.target-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
+.topt { display: flex; align-items: flex-start; gap: 12px; padding: 11px 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all .15s; margin-bottom: 6px; }
+.topt:last-child { margin-bottom: 0; }
+.topt:hover { background: #12122a; }
+.topt.sel { background: #12122a; border-color: var(--accent); }
+.topt input[type=radio] { margin-top: 2px; accent-color: var(--accent); width: auto; flex-shrink: 0; }
+.topt-label { font-size: 13px; font-weight: 700; color: var(--text); }
+.topt-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
+.dtab-bar { display: flex; border-bottom: 1px solid var(--border); }
+.dtab { padding: 10px 18px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all .15s; }
+.dtab.active { color: var(--accent2); border-bottom-color: var(--accent); }
+.dpanel { display: none; padding-top: 16px; }
+.dpanel.active { display: block; }
+.tpl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
+.tpl-card { border: 2px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: all .15s; }
+.tpl-card:hover { border-color: #5a3ce0; transform: translateY(-1px); }
+.tpl-card.sel { border-color: var(--accent); box-shadow: 0 0 0 2px #6c4ef233; }
+.tpl-thumb { height: 72px; display: flex; align-items: center; justify-content: center; font-size: 24px; background: var(--surface2); }
+.tpl-name { padding: 7px 10px; font-size: 11px; font-weight: 700; background: #0a0a18; border-top: 1px solid var(--border); text-align: center; }
+.var-tag { display: inline-block; background: #1a1030; border: 1px solid #3d2a7a; color: var(--accent2); border-radius: 6px; padding: 3px 10px; font-size: 11px; font-family: var(--mono); cursor: pointer; margin: 0 4px 6px 0; transition: background .1s; user-select: none; }
+.var-tag:hover { background: #2a1050; }
+.prog-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 12px; font-family: var(--mono); border-bottom: 1px solid #0d0d1a; }
+.prog-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.spinner { width: 13px; height: 13px; border: 2px solid #222; border-top-color: var(--accent2); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.preview-box { background: #06060d; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.prev-head { background: #0f0f1e; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.prev-to { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+.prev-subject { font-size: 14px; font-weight: 700; color: #fff; margin-top: 4px; }
+#prev-iframe { width: 100%; min-height: 320px; border: none; background: #fff; display: block; border-radius: 0 0 10px 10px; }
+#prev-pre { padding: 18px; font-family: var(--mono); font-size: 12px; color: #aaa; white-space: pre-wrap; line-height: 1.8; min-height: 200px; display: none; }
+.callout { background: #130d30; border: 1px solid #3d2a7a; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13px; line-height: 1.75; }
+.callout strong { color: var(--accent2); }
+.callout a { color: var(--accent2); }
+.callout code { font-family: var(--mono); font-size: 12px; background: #0a0820; padding: 1px 6px; border-radius: 4px; color: #c4b5fd; }
+#toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 22px; border-radius: 10px; font-weight: 700; font-size: 13px; z-index: 9999; display: none; max-width: 360px; }
+#toast.success { background: #0a2518; border: 1px solid #1a4731; color: var(--green); }
+#toast.error   { background: #280d0d; border: 1px solid #4a1a1a; color: var(--red); }
+#toast.info    { background: #130d30; border: 1px solid #3d2a7a; color: var(--accent2); }
+.row { display: flex; gap: 16px; align-items: flex-start; }
+.col { flex: 1; }
+.col-2 { flex: 2; }
+input[type="checkbox"] { width: auto; cursor: pointer; accent-color: var(--accent); }
+.alert-banner { background: #1e1500; border: 1px solid #4a3800; border-radius: 10px; padding: 14px 20px; margin-bottom: 18px; font-size: 13px; display: flex; align-items: flex-start; gap: 12px; }
+.alert-banner strong { color: var(--yellow); }
+pre.code-b { background: #03030a; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: var(--mono); font-size: 12px; color: #7dd3fc; overflow-x: auto; line-height: 1.7; }
+@media (max-width: 900px) {
+  aside { width: 60px; }
+  aside .logo p, aside nav a span, aside .sidebar-stats { display: none; }
+  nav a { padding: 14px; justify-content: center; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .row { flex-direction: column; }
+  .tpl-grid { grid-template-columns: repeat(2, 1fr); }
+}
 </style>
 </head>
 <body>
 
 <aside>
   <div class="logo">
-    <h1>mail<span>bot</span></h1>
-    <p>envío real personalizado</p>
+    <h1>mail<em>bot</em></h1>
+    <p>EOS Community</p>
   </div>
   <nav>
-    <a class="active" onclick="goto('dashboard', this)">📊 <span>Dashboard</span></a>
-    <a onclick="goto('contactos', this)">👥 <span>Contactos</span></a>
-    <a onclick="goto('campana', this)">✉️ <span>Enviar campaña</span></a>
-    <a onclick="goto('config', this)">⚙️ <span>Configuración</span></a>
+    <a class="active" onclick="goto('dashboard',this)"><span class="ni">📊</span><span>Dashboard</span></a>
+    <a onclick="goto('contactos',this)"><span class="ni">👥</span><span>Contactos</span></a>
+    <a onclick="goto('inactivos',this)"><span class="ni">⚠️</span><span>Inactivos</span></a>
+    <a onclick="goto('campana',this)"><span class="ni">✉️</span><span>Campaña</span></a>
+    <a onclick="goto('config',this)"><span class="ni">⚙️</span><span>Config</span></a>
   </nav>
-  <div class="sidebar-foot">
-    <div class="plan-badge">
-      <strong>EmailJS GRATIS</strong>
-      <span id="counter-badge">200 emails/mes</span>
-    </div>
+  <div class="sidebar-stats">
+    <div class="ss-card"><div class="ss-label">Activos</div><div class="ss-val" style="color:var(--green)" id="sb-activos">0</div></div>
+    <div class="ss-card"><div class="ss-label">Inactivos</div><div class="ss-val" style="color:var(--yellow)" id="sb-inactivos">0</div></div>
+    <div class="ss-card"><div class="ss-label">Total</div><div class="ss-val" style="color:var(--accent2)" id="sb-total">0</div></div>
+    <div class="ss-card"><div class="ss-label">Enviados</div><div class="ss-val" style="color:var(--blue)" id="sb-enviados">0</div></div>
   </div>
 </aside>
 
 <main>
   <header>
     <h2 id="page-title">Dashboard</h2>
-    <span style="font-size:11px;color:#444;font-family:var(--mono)" id="date-display"></span>
+    <span style="font-size:11px;color:var(--muted);font-family:var(--mono)" id="date-display"></span>
   </header>
-
   <div class="content">
 
-    <!-- ── DASHBOARD ── -->
+    <!-- DASHBOARD -->
     <div class="tab active" id="tab-dashboard">
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Contactos activos</div>
-          <div class="stat-val" id="stat-activos">0</div>
-          <div class="stat-sub" id="stat-total-c">0 total</div>
+        <div class="stat-card g"><div class="stat-label">Activos EOS</div><div class="stat-val" style="color:var(--green)" id="ds-activos">0</div><div class="stat-sub">usuarios activos</div></div>
+        <div class="stat-card y"><div class="stat-label">Inactivos</div><div class="stat-val" style="color:var(--yellow)" id="ds-inactivos">0</div><div class="stat-sub">a reactivar</div></div>
+        <div class="stat-card b"><div class="stat-label">Emails enviados</div><div class="stat-val" style="color:var(--blue)" id="ds-enviados">0</div><div class="stat-sub">todas las campañas</div></div>
+        <div class="stat-card p"><div class="stat-label">Campañas</div><div class="stat-val" style="color:var(--accent2)" id="ds-campanas">0</div><div class="stat-sub" id="ds-campanas-sub"></div></div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="card-title">📊 Distribución <small id="ds-pct"></small></div>
+        <div style="background:var(--bg);border-radius:8px;overflow:hidden;height:14px;display:flex;margin-bottom:10px">
+          <div id="bar-act" style="background:var(--green);height:100%;transition:width .5s"></div>
+          <div id="bar-ina" style="background:var(--yellow);height:100%;transition:width .5s"></div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">Emails enviados</div>
-          <div class="stat-val" id="stat-enviados">0</div>
-          <div class="stat-sub">todas las campañas</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Campañas</div>
-          <div class="stat-val" id="stat-campanas">0</div>
-          <div class="stat-sub" id="stat-campanas-sub"></div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Estado EmailJS</div>
-          <div class="stat-val" id="stat-ejs" style="font-size:18px;margin-top:6px">–</div>
-          <div class="stat-sub" id="stat-ejs-sub">configura primero</div>
+        <div style="display:flex;gap:20px;font-size:12px;font-family:var(--mono)">
+          <span><span style="color:var(--green)">■</span> Activos</span>
+          <span><span style="color:var(--yellow)">■</span> Inactivos</span>
         </div>
       </div>
-
-      <div class="card">
-        <div class="card-title">Campañas enviadas</div>
-        <div id="dashboard-campaigns">
-          <p style="color:#444;font-size:13px">Aún no hay campañas enviadas.</p>
-        </div>
-      </div>
+      <div class="card"><div class="card-title">📬 Campañas recientes</div><div id="dash-camps"><p style="color:var(--muted);font-size:13px">Sin campañas.</p></div></div>
     </div>
 
-    <!-- ── CONTACTOS ── -->
+    <!-- CONTACTOS -->
     <div class="tab" id="tab-contactos">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-          <div class="card-title" style="margin-bottom:0">Lista de contactos</div>
+        <div class="card-title">📥 Importar XLSX · EOS Community</div>
+        <div class="drop-zone" id="drop-zone"
+          onclick="document.getElementById('xlsxFile').click()"
+          ondragover="dOver(event)" ondragleave="dLeave()" ondrop="dDrop(event)">
+          <div class="drop-icon">📊</div>
+          <p><strong>Arrastra el Excel aquí</strong> o haz clic para seleccionar</p>
+          <p style="font-size:11px;margin-top:6px">Detecta: Correo · Nombre · Apellido · <strong>Estatus Activo/Inactivo</strong> · País · Ciudad</p>
+        </div>
+        <input type="file" id="xlsxFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="loadXLSX(event)">
+        <div id="import-area" style="display:none">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:14px">
+            <span id="import-summary" style="font-size:12px;color:var(--accent2);font-family:var(--mono)"></span>
+            <button class="btn btn-green" onclick="confirmImport()">✅ Confirmar importación</button>
+            <button class="btn btn-ghost" onclick="cancelImport()">Cancelar</button>
+          </div>
+          <div id="import-table" style="overflow-x:auto;margin-top:12px"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <div class="card-title" style="margin-bottom:0">Todos los contactos <small id="ctitle"></small></div>
           <div style="display:flex;gap:8px">
-            <button class="btn btn-ghost" onclick="importCSV()">📂 Importar CSV</button>
-            <button class="btn btn-primary" onclick="toggleAddContact()">+ Agregar</button>
+            <button class="btn btn-danger" style="font-size:11px;padding:7px 12px" onclick="clearAll()">🗑 Limpiar</button>
+            <button class="btn btn-primary" onclick="toggleAF()">+ Agregar</button>
           </div>
         </div>
-        <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="loadCSV(event)">
-
-        <div id="add-contact-form" style="display:none;background:#08080f;border:1px solid #2a2a3e;border-radius:10px;padding:18px;margin-bottom:18px">
+        <div class="filter-bar">
+          <input id="s-search" placeholder="🔍 Nombre o email…" oninput="renderContacts()" style="flex:1;min-width:160px">
+          <button class="fchip on"  id="chip-todos"    onclick="setChip('todos')">Todos</button>
+          <button class="fchip"     id="chip-activo"   onclick="setChip('activo')">🟢 Activos</button>
+          <button class="fchip"     id="chip-inactivo" onclick="setChip('inactivo')">🟡 Inactivos</button>
+          <select id="s-pais" onchange="renderContacts()" style="max-width:150px"><option value="">🌍 País</option></select>
+          <span class="count-pill" id="ccount">0</span>
+        </div>
+        <div id="add-form" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px">
           <div class="row">
-            <div class="col field">
-              <label>Nombre</label>
-              <input id="nc-nombre" placeholder="Juan Pérez">
-            </div>
-            <div class="col field">
-              <label>Email</label>
-              <input id="nc-email" type="email" placeholder="juan@empresa.com">
-            </div>
-            <div class="col field">
-              <label>Empresa</label>
-              <input id="nc-empresa" placeholder="Mi Empresa">
-            </div>
+            <div class="col field"><label>Nombre</label><input id="f-nombre" placeholder="Ana García"></div>
+            <div class="col field"><label>Email</label><input id="f-email" type="email" placeholder="ana@correo.com"></div>
+            <div class="col field"><label>Patrocinador</label><input id="f-empresa" placeholder="EOS Community"></div>
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-primary" onclick="addContact()">Guardar</button>
-            <button class="btn btn-ghost" onclick="toggleAddContact()">Cancelar</button>
+            <button class="btn btn-ghost" onclick="toggleAF()">Cancelar</button>
           </div>
         </div>
-
         <table>
-          <thead>
-            <tr>
-              <th>Nombre</th><th>Email</th><th>Empresa</th><th>Estado</th><th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="contacts-table"></tbody>
+          <thead><tr>
+            <th style="width:30px"><input type="checkbox" id="check-all" onchange="toggleAll(this)"></th>
+            <th>Nombre</th><th>Email</th><th>País</th>
+            <th>Estatus EOS</th><th>Estado correo</th><th>Acción</th>
+          </tr></thead>
+          <tbody id="ctbody"></tbody>
         </table>
-        <div style="margin-top:10px;font-size:11px;color:#444;font-family:var(--mono)">
-          💡 Formato CSV: nombre,email,empresa (primera fila = encabezados)
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+          <button class="btn btn-ghost" style="font-size:11px" onclick="bulkMail('suscrito')">✅ Suscribir selec.</button>
+          <button class="btn btn-ghost" style="font-size:11px" onclick="bulkMail('desuscrito')">🚫 Desuscribir selec.</button>
+          <button class="btn btn-danger" style="font-size:11px" onclick="bulkDelete()">🗑 Eliminar selec.</button>
         </div>
       </div>
     </div>
 
-    <!-- ── CAMPAÑA ── -->
+    <!-- INACTIVOS -->
+    <div class="tab" id="tab-inactivos">
+      <div class="alert-banner">
+        <span style="font-size:22px;flex-shrink:0">⚠️</span>
+        <div>
+          <strong>Usuarios Inactivos en EOS Community</strong><br>
+          <span style="color:#a09060;font-size:12px">Estatus <strong>Inactivo</strong> en el sistema. Habilita su correo para incluirlos en campañas de reactivación. Cuando respondan o se reactiven, márcalos como Suscrito.</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+          <div class="card-title" style="margin-bottom:0">Listado de Inactivos <small id="ititle"></small></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-yellow" onclick="habilitarTodosInactivos()">☑ Habilitar todos</button>
+            <button class="btn btn-primary" onclick="goSendInactive()">✉️ Campaña a inactivos</button>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <input id="si-search" placeholder="🔍 Buscar…" oninput="renderInactivos()" style="flex:1;min-width:160px">
+          <select id="si-pais" onchange="renderInactivos()" style="max-width:150px"><option value="">🌍 País</option></select>
+          <span class="count-pill" id="icount">0</span>
+        </div>
+        <table>
+          <thead><tr>
+            <th style="width:30px"><input type="checkbox" id="iall" onchange="toggleIAll(this)"></th>
+            <th>Nombre</th><th>Email</th><th>País</th><th>Ciudad</th>
+            <th>Correo habilitado</th><th>Marcar como</th>
+          </tr></thead>
+          <tbody id="itbody"></tbody>
+        </table>
+        <p style="margin-top:12px;font-size:12px;color:var(--muted);font-family:var(--mono)">
+          💡 Activa el correo para que el inactivo reciba la próxima campaña. Cuando responda o se reactive, usa "Suscribir" para actualizar su estatus.
+        </p>
+      </div>
+    </div>
+
+    <!-- CAMPAÑA -->
     <div class="tab" id="tab-campana">
       <div class="row">
         <div class="col-2">
           <div class="card">
             <div class="card-title">✉️ Componer campaña</div>
             <div class="field">
-              <label>Nombre de la campaña</label>
-              <input id="camp-nombre" placeholder="Ej: Newsletter Marzo 2026">
+              <label>Enviar a</label>
+              <div class="target-box">
+                <div class="topt sel" id="topt-suscritos" onclick="selTarget('suscritos')">
+                  <input type="radio" name="tgt" value="suscritos" checked>
+                  <div><div class="topt-label">🟢 Solo suscritos al correo</div><div class="topt-desc" id="tdesc-suscritos">—</div></div>
+                </div>
+                <div class="topt" id="topt-activos" onclick="selTarget('activos')">
+                  <input type="radio" name="tgt" value="activos">
+                  <div><div class="topt-label">✅ Activos en EOS (con correo activo)</div><div class="topt-desc" id="tdesc-activos">—</div></div>
+                </div>
+                <div class="topt" id="topt-inactivos" onclick="selTarget('inactivos')">
+                  <input type="radio" name="tgt" value="inactivos">
+                  <div><div class="topt-label">⚠️ Inactivos con correo habilitado</div><div class="topt-desc" id="tdesc-inactivos">—</div></div>
+                </div>
+                <div class="topt" id="topt-todos" onclick="selTarget('todos')">
+                  <input type="radio" name="tgt" value="todos">
+                  <div><div class="topt-label">📋 Todos (activos + inactivos habilitados)</div><div class="topt-desc" id="tdesc-todos">—</div></div>
+                </div>
+              </div>
             </div>
+            <div class="field"><label>Nombre de la campaña</label><input id="camp-nombre" placeholder="Reactivación Marzo 2026"></div>
             <div class="field">
-              <label>Asunto del email</label>
-              <input id="camp-asunto" value="Hola {{nombre}}, tenemos algo para ti">
+              <label>Asunto</label>
+              <input id="camp-asunto" value="Hola {{nombre}}, te esperamos de vuelta 🚀" oninput="updatePreview()">
               <div style="margin-top:8px">
                 <span class="var-tag" onclick="insertVar('camp-asunto','nombre')">{{nombre}}</span>
-                <span class="var-tag" onclick="insertVar('camp-asunto','empresa')">{{empresa}}</span>
+                <span class="var-tag" onclick="insertVar('camp-asunto','ciudad')">{{ciudad}}</span>
               </div>
             </div>
             <div class="field">
-              <label>Cuerpo del email</label>
-              <div style="margin-bottom:8px">
-                <span class="var-tag" onclick="insertVar('camp-body','nombre')">{{nombre}}</span>
-                <span class="var-tag" onclick="insertVar('camp-body','empresa')">{{empresa}}</span>
-                <span class="var-tag" onclick="insertVar('camp-body','email')">{{email}}</span>
+              <label>Diseño del email</label>
+              <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden">
+                <div class="dtab-bar">
+                  <div class="dtab active" onclick="swDtab('visual',this)">🎨 Visual</div>
+                  <div class="dtab" onclick="swDtab('html',this)">&lt;/&gt; HTML</div>
+                  <div class="dtab" onclick="swDtab('texto',this)">📝 Texto</div>
+                </div>
+                <div class="dpanel active" id="dp-visual" style="padding:16px">
+                  <div class="tpl-grid" id="tpl-grid"></div>
+                  <div id="ve-fields" style="display:none">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                      <div class="field" style="margin:0"><label>Color principal</label><input type="color" id="ve-color" value="#6c4ef2" oninput="rebuildTpl()" style="height:40px;cursor:pointer"></div>
+                      <div class="field" style="margin:0"><label>Logo / Nombre</label><input id="ve-logo" placeholder="EOS Community" oninput="rebuildTpl()"></div>
+                    </div>
+                    <div class="field"><label>Título</label><input id="ve-title" placeholder="¡Hola {{nombre}}, te extrañamos!" oninput="rebuildTpl()"></div>
+                    <div class="field"><label>Cuerpo</label><textarea id="ve-body" rows="5" oninput="rebuildTpl()" placeholder="Escribe tu mensaje aquí…&#10;&#10;Usa {{nombre}}, {{ciudad}}, {{empresa}}"></textarea></div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                      <div class="field" style="margin:0"><label>Texto botón</label><input id="ve-btn" placeholder="Volver a EOS →" oninput="rebuildTpl()"></div>
+                      <div class="field" style="margin:0"><label>URL botón</label><input id="ve-url" placeholder="https://eoscommunity.online" oninput="rebuildTpl()"></div>
+                    </div>
+                    <div style="margin-top:10px">
+                      <span class="var-tag" onclick="vInsert('{{nombre}}')">{{nombre}}</span>
+                      <span class="var-tag" onclick="vInsert('{{empresa}}')">{{empresa}}</span>
+                      <span class="var-tag" onclick="vInsert('{{ciudad}}')">{{ciudad}}</span>
+                      <span class="var-tag" onclick="vInsert('{{email}}')">{{email}}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="dpanel" id="dp-html" style="padding:16px">
+                  <p style="font-size:12px;color:#555;margin-bottom:8px">Pega HTML con estilos inline.</p>
+                  <textarea id="camp-html" rows="14" oninput="updatePreview()" placeholder="<h1>Hola {{nombre}}</h1>"></textarea>
+                  <div style="margin-top:8px">
+                    <span class="var-tag" onclick="insertVar('camp-html','nombre')">{{nombre}}</span>
+                    <span class="var-tag" onclick="insertVar('camp-html','empresa')">{{empresa}}</span>
+                    <span class="var-tag" onclick="insertVar('camp-html','ciudad')">{{ciudad}}</span>
+                    <span class="var-tag" onclick="insertVar('camp-html','email')">{{email}}</span>
+                  </div>
+                </div>
+                <div class="dpanel" id="dp-texto" style="padding:16px">
+                  <textarea id="camp-body" rows="10" oninput="updatePreview()">Hola {{nombre}},
+
+Notamos que llevas un tiempo sin actividad en EOS Community y nos gustaría que volvieras.
+
+Tenemos novedades que creemos te van a interesar mucho.
+
+Visítanos: https://eoscommunity.online
+
+Un abrazo,
+El equipo EOS Community</textarea>
+                  <div style="margin-top:8px">
+                    <span class="var-tag" onclick="insertVar('camp-body','nombre')">{{nombre}}</span>
+                    <span class="var-tag" onclick="insertVar('camp-body','ciudad')">{{ciudad}}</span>
+                    <span class="var-tag" onclick="insertVar('camp-body','email')">{{email}}</span>
+                  </div>
+                </div>
               </div>
-              <textarea id="camp-body" rows="10" oninput="updatePreview()">Hola {{nombre}},
-
-Espero que todo marche excelente en {{empresa}}.
-
-Te escribo porque tenemos algo especial preparado este mes y creo que puede interesarte mucho.
-
-¿Tienes 10 minutos esta semana para una llamada rápida?
-
-Saludos,
-El equipo</textarea>
             </div>
-
             <div id="send-status" style="display:none;margin-bottom:16px"></div>
-
-            <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
               <button class="btn btn-outline" onclick="togglePreview()">👁 Preview</button>
-              <button class="btn btn-primary" id="btn-send" onclick="sendCampaign()">
-                🚀 Enviar a todos los contactos
-              </button>
+              <button class="btn btn-primary" id="btn-send" onclick="sendCampaign()">🚀 Enviar campaña</button>
+              <span id="send-count" style="font-size:11px;color:var(--muted);font-family:var(--mono)"></span>
             </div>
           </div>
         </div>
-
         <div class="col" id="preview-panel" style="display:none">
-          <div class="card">
-            <div class="card-title">Preview</div>
-            <div class="field">
-              <label>Vista previa para</label>
-              <select id="preview-select" onchange="updatePreview()"></select>
-            </div>
+          <div class="card" style="position:sticky;top:0">
+            <div class="card-title">👁 Preview</div>
+            <div class="field"><label>Para</label><select id="preview-select" onchange="updatePreview()"></select></div>
             <div class="preview-box">
-              <div class="preview-header">
-                <div class="preview-from" id="prev-to">Para: —</div>
-                <div class="preview-subject" id="prev-subject">—</div>
+              <div class="prev-head">
+                <div class="prev-to" id="prev-to">Para: —</div>
+                <div class="prev-subject" id="prev-subject">—</div>
               </div>
-              <div class="preview-body" id="prev-body">—</div>
+              <iframe id="prev-iframe" sandbox="allow-same-origin"></iframe>
+              <pre id="prev-pre">—</pre>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── CONFIG ── -->
+    <!-- CONFIG -->
     <div class="tab" id="tab-config">
-      <div class="setup-callout">
-        <strong>🔑 Cómo configurar EmailJS (gratis, 200 emails/mes, sin backend)</strong><br>
+      <div class="callout">
+        <strong>🔑 Cómo configurar EmailJS (gratis · 200 emails/mes)</strong><br>
         1. Crea cuenta en <a href="https://emailjs.com" target="_blank">emailjs.com</a><br>
-        2. Crea un <strong>Email Service</strong> (Gmail, Outlook, etc.) → copia el <strong>Service ID</strong><br>
-        3. Crea un <strong>Email Template</strong> con variables <code style="color:var(--accent2)">{{to_email}}</code>, <code style="color:var(--accent2)">{{subject}}</code>, <code style="color:var(--accent2)">{{message}}</code>, <code style="color:var(--accent2)">{{to_name}}</code><br>
-        4. Ve a <strong>Account > API Keys</strong> → copia tu <strong>Public Key</strong>
+        2. <strong>Email Services</strong> → conecta Gmail → copia <strong>Service ID</strong><br>
+        3. <strong>Email Templates</strong> → crea template con: <code>{{to_email}}</code> <code>{{to_name}}</code> <code>{{subject}}</code> <code>{{message}}</code><br>
+        4. Activa <strong>"Content type: HTML"</strong> en el template para diseños HTML<br>
+        5. <strong>Account → API Keys</strong> → copia <strong>Public Key</strong>
       </div>
-
       <div class="card">
         <div class="card-title">⚙️ Credenciales EmailJS</div>
         <div class="row">
-          <div class="col field">
-            <label>Public Key</label>
-            <input id="ejs-pubkey" placeholder="tu_public_key_aquí" oninput="saveConfig()">
-          </div>
-          <div class="col field">
-            <label>Service ID</label>
-            <input id="ejs-service" placeholder="service_xxxxxxx" oninput="saveConfig()">
-          </div>
-          <div class="col field">
-            <label>Template ID</label>
-            <input id="ejs-template" placeholder="template_xxxxxxx" oninput="saveConfig()">
-          </div>
+          <div class="col field"><label>Public Key</label><input id="cfg-pubkey" placeholder="tu_public_key" oninput="saveConfig()"></div>
+          <div class="col field"><label>Service ID</label><input id="cfg-service" placeholder="service_v3m9ok2" oninput="saveConfig()"></div>
+          <div class="col field"><label>Template ID</label><input id="cfg-template" placeholder="template_xxxxxxx" oninput="saveConfig()"></div>
         </div>
-        <div class="field">
-          <label>Tu nombre / remitente</label>
-          <input id="ejs-from-name" placeholder="Ej: Juan del Equipo MailBot" oninput="saveConfig()">
+        <div class="field"><label>Nombre remitente</label><input id="cfg-fromname" placeholder="EOS Community" oninput="saveConfig()"></div>
+        <div style="display:flex;gap:12px;align-items:center">
+          <button class="btn btn-primary" onclick="testConfig()">🧪 Email de prueba</button>
+          <span id="test-res" style="font-size:12px"></span>
         </div>
-        <button class="btn btn-primary" onclick="testConfig()">🧪 Enviar email de prueba</button>
-        <span id="test-result" style="margin-left:12px;font-size:13px"></span>
       </div>
-
       <div class="card">
-        <div class="card-title">📋 Template recomendado para EmailJS</div>
-        <p style="font-size:12px;color:#666;margin-bottom:12px">Crea un template con este contenido en emailjs.com:</p>
-        <pre>Para: <code class="hl">{{to_email}}</code>
-Asunto: <code class="hl">{{subject}}</code>
+        <div class="card-title">📋 Template EmailJS</div>
+        <pre class="code-b">Para: {{to_email}}
+Asunto: {{subject}}
 
-<code class="str">{{message}}</code>
+{{message}}
 
 ---
-Este email fue enviado a <code class="hl">{{to_name}}</code> usando MailBot.
-Para desuscribirte responde con "UNSUB".</pre>
+Enviado a {{to_name}} — EOS Community MailBot</pre>
+        <p style="font-size:12px;color:#555;margin-top:12px">💡 Activa <strong style="color:var(--accent2)">Content type: HTML</strong> en EmailJS para emails con diseño visual.</p>
       </div>
     </div>
 
-  </div><!-- /content -->
+  </div>
 </main>
-
 <div id="toast"></div>
 
 <script>
-// ── STATE ──
-let contacts = JSON.parse(localStorage.getItem('mb_contacts') || '[]');
-let campaigns = JSON.parse(localStorage.getItem('mb_campaigns') || '[]');
-let config = JSON.parse(localStorage.getItem('mb_config') || '{}');
-let sendResults = [];
+// STATE
+let contacts  = JSON.parse(localStorage.getItem('mb_v2_contacts')  || '[]');
+let campaigns = JSON.parse(localStorage.getItem('mb_v2_campaigns') || '[]');
+let config    = JSON.parse(localStorage.getItem('mb_v2_config')    || '{}');
+let pendingImport = [];
+let activeDesign  = 'visual';
+let selectedTpl   = 0;
+let currentTarget = 'suscritos';
+let activeChip    = 'todos';
 
-// ── INIT ──
+// TEMPLATES
+const TEMPLATES = [
+  { name:'EOS Oscuro', icon:'🌙',
+    build:(c,t,b,btn,url,logo) => `<div style="background:#0a0618;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#12102a;border-radius:20px;overflow:hidden;border:1px solid #2d2060"><div style="background:linear-gradient(135deg,${c},${c}aa);padding:34px;text-align:center"><h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;letter-spacing:-1px">${logo||'EOS Community'}</h1><p style="color:#ffffff88;margin:6px 0 0;font-size:13px">eoscommunity.online</p></div><div style="padding:36px"><h2 style="color:#e4e2f0;font-size:22px;margin:0 0 18px;font-weight:700">${t||'¡Hola {{nombre}}!'}</h2><div style="color:#b0a8c8;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:15px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;box-shadow:0 4px 20px ${c}55">${btn}</a></div>`:''}</div><div style="background:#07050f;padding:20px 36px;text-align:center;border-top:1px solid #2d2060"><p style="color:#444;font-size:11px;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
+  },
+  { name:'Reactivación', icon:'⚡',
+    build:(c,t,b,btn,url,logo) => `<div style="background:#fff9f0;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12)"><div style="background:linear-gradient(135deg,${c},${c}88);padding:36px;position:relative;overflow:hidden"><div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:#ffffff15;border-radius:50%"></div><h1 style="color:#fff;margin:0;font-size:28px;font-weight:900;position:relative">${logo||'EOS Community'}</h1><p style="color:#ffffffcc;margin:6px 0 0;font-size:13px;position:relative">¡Te necesitamos de vuelta!</p></div><div style="padding:40px"><h2 style="color:#1a0a00;font-size:24px;margin:0 0 20px;font-weight:800;line-height:1.3">${t||'Hola {{nombre}}, ¿todo bien?'}</h2><div style="color:#444;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;display:inline-block">${btn}</a></div>`:''}</div><div style="background:#f5f0e8;padding:20px 40px;border-top:2px dashed #e0d5c5;display:flex;justify-content:space-between;align-items:center"><span style="color:#888;font-size:12px">© ${new Date().getFullYear()} ${logo||'EOS Community'}</span><a href="${url||'#'}" style="color:${c};font-size:12px;font-weight:700;text-decoration:none">Visitar sitio →</a></div></div></div>`
+  },
+  { name:'Newsletter', icon:'📰',
+    build:(c,t,b,btn,url,logo) => `<div style="background:#f4f4f8;padding:40px 16px;font-family:Georgia,serif"><div style="max-width:580px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:4px solid ${c};padding-bottom:14px;margin-bottom:30px"><span style="font-size:24px;font-weight:900;color:#0a0010;letter-spacing:-1.5px">${logo||'EOS Community'}</span><span style="font-size:11px;color:#aaa;font-family:monospace">${new Date().toLocaleDateString('es-CO')}</span></div><h2 style="font-size:32px;color:#0a0010;margin:0 0 22px;font-weight:900;line-height:1.2">${t||'Hola {{nombre}}'}</h2><div style="color:#333;font-size:16px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="margin-top:32px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:14px 30px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;font-family:sans-serif">${btn}</a></div>`:''}<div style="border-top:3px solid ${c};margin-top:40px;padding-top:18px"><p style="color:#aaa;font-size:12px;font-family:monospace;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
+  },
+  { name:'Minimalista', icon:'◻',
+    build:(c,t,b,btn,url,logo) => `<div style="background:#fff;padding:60px 16px;font-family:'Helvetica Neue',Arial,sans-serif"><div style="max-width:520px;margin:0 auto"><div style="width:48px;height:5px;background:${c};margin-bottom:36px;border-radius:3px"></div><p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#bbb;margin:0 0 20px;font-family:monospace">${logo||'EOS Community'}</p><h2 style="font-size:28px;color:#111;margin:0 0 26px;font-weight:300;line-height:1.35">${t||'Hola {{nombre}}'}</h2><div style="color:#555;font-size:16px;line-height:1.95;white-space:pre-wrap">${b||''}</div>${btn?`<div style="margin-top:40px"><a href="${url||'#'}" style="color:${c};font-size:15px;font-weight:700;text-decoration:none;border-bottom:2px solid ${c};padding-bottom:3px">${btn} →</a></div>`:''}<div style="margin-top:52px;padding-top:24px;border-top:1px solid #eee"><p style="color:#ddd;font-size:11px;margin:0;font-family:monospace">© ${new Date().getFullYear()} ${logo||'EOS Community'} · UNSUB para desuscribirte</p></div></div></div>`
+  },
+  { name:'Vibrante', icon:'✨',
+    build:(c,t,b,btn,url,logo) => `<div style="background:#f0ebff;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 12px 60px ${c}33"><div style="background:${c};padding:40px;text-align:center"><div style="width:64px;height:64px;background:#ffffff33;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px">🌟</div><h1 style="color:#fff;margin:0;font-size:26px;font-weight:800">${logo||'EOS Community'}</h1></div><div style="padding:40px"><h2 style="color:#1a1630;font-size:23px;margin:0 0 20px">${t||'¡Hola {{nombre}}!'}</h2><div style="color:#555;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:16px 40px;border-radius:50px;text-decoration:none;font-weight:800;font-size:15px;display:inline-block;box-shadow:0 6px 24px ${c}44">${btn}</a></div>`:''}</div><div style="background:#f8f4ff;padding:20px;text-align:center;border-top:1px solid #ece0ff"><p style="color:#aaa;font-size:11px;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
+  },
+  { name:'Solo texto', icon:'📄',
+    build:(c,t,b,btn,url,logo) => `<div style="background:#f8f8f8;padding:40px 16px;font-family:monospace"><div style="max-width:560px;margin:0 auto;background:#fff;padding:36px;border-left:4px solid ${c}"><p style="color:#aaa;font-size:11px;margin:0 0 24px;text-transform:uppercase;letter-spacing:3px">${logo||'EOS Community'} — ${new Date().toLocaleDateString('es-CO')}</p><p style="color:#111;font-size:16px;font-weight:700;margin:0 0 18px">${t||'Hola {{nombre}},'}</p><div style="color:#333;font-size:14px;line-height:1.85;white-space:pre-wrap">${b||''}</div>${btn?`<p style="margin:24px 0 0"><a href="${url||'#'}" style="color:${c};font-weight:700">&gt;&gt; ${btn}</a></p>`:''}<hr style="border:none;border-top:1px dashed #ddd;margin:28px 0"><p style="color:#ccc;font-size:11px;margin:0">${logo||'EOS Community'} · Responde UNSUB</p></div></div>`
+  },
+];
+
+// INIT
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('date-display').textContent =
-    new Date().toLocaleDateString('es-CO', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
-
-  if (!contacts.length) {
-    contacts = [
-      { id:1, nombre:'Carlos Mendoza', email:'carlos@ejemplo.com', empresa:'Acme Corp', estado:'suscrito' },
-      { id:2, nombre:'Laura Vélez',    email:'laura@tech.io',      empresa:'TechStart',  estado:'suscrito' },
-    ];
-    saveContacts();
-  }
-
-  loadConfig();
-  renderContacts();
-  renderDashboard();
-  updatePreviewSelect();
+    new Date().toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  loadConfig(); buildTplGrid(); renderAll();
 });
 
-// ── NAV ──
-function goto(tab, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  el.classList.add('active');
-  const titles = { dashboard:'Dashboard', contactos:'Contactos', campana:'✉️ Enviar campaña', config:'Configuración' };
-  document.getElementById('page-title').textContent = titles[tab];
-  if (tab === 'campana') updatePreviewSelect();
-  if (tab === 'dashboard') renderDashboard();
-}
-
-// ── CONFIG ──
-function loadConfig() {
-  if (config.pubkey)    document.getElementById('ejs-pubkey').value = config.pubkey;
-  if (config.service)   document.getElementById('ejs-service').value = config.service;
-  if (config.template)  document.getElementById('ejs-template').value = config.template;
-  if (config.fromName)  document.getElementById('ejs-from-name').value = config.fromName;
-  updateEjsBadge();
-}
-
-function saveConfig() {
-  config = {
-    pubkey:   document.getElementById('ejs-pubkey').value.trim(),
-    service:  document.getElementById('ejs-service').value.trim(),
-    template: document.getElementById('ejs-template').value.trim(),
-    fromName: document.getElementById('ejs-from-name').value.trim(),
-  };
-  localStorage.setItem('mb_config', JSON.stringify(config));
-  updateEjsBadge();
-}
-
-function updateEjsBadge() {
-  const ok = config.pubkey && config.service && config.template;
-  document.getElementById('stat-ejs').textContent = ok ? '✅' : '❌';
-  document.getElementById('stat-ejs-sub').textContent = ok ? 'Listo para enviar' : 'Ve a Configuración';
-}
-
-function isConfigured() {
-  return config.pubkey && config.service && config.template;
-}
-
-async function testConfig() {
-  const res = document.getElementById('test-result');
-  if (!isConfigured()) { res.textContent = '❌ Completa la configuración primero'; res.style.color = '#f87171'; return; }
-  res.textContent = '⏳ Enviando prueba...'; res.style.color = '#aaa';
-  try {
-    emailjs.init({ publicKey: config.pubkey });
-    await emailjs.send(config.service, config.template, {
-      to_email: config.pubkey.includes('test') ? 'test@test.com' : 'prueba@prueba.com',
-      to_name:  'Prueba',
-      subject:  '✅ MailBot funciona correctamente',
-      message:  'Este es un email de prueba enviado desde MailBot. Todo está configurado correctamente.',
-      from_name: config.fromName || 'MailBot',
-    });
-    res.textContent = '✅ ¡Email de prueba enviado! Revisa tu bandeja.';
-    res.style.color = '#3dd68c';
-  } catch(e) {
-    res.textContent = '❌ Error: ' + (e.text || e.message || 'verifica tus credenciales');
-    res.style.color = '#f87171';
-  }
-}
-
-// ── CONTACTS ──
-function saveContacts() { localStorage.setItem('mb_contacts', JSON.stringify(contacts)); }
-
-function renderContacts() {
-  const tbody = document.getElementById('contacts-table');
-  if (!contacts.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:#444;text-align:center;padding:24px">Sin contactos. Agrega uno o importa un CSV.</td></tr>';
-    return;
-  }
-  tbody.innerHTML = contacts.map(c => `
-    <tr>
-      <td class="bold">${esc(c.nombre)}</td>
-      <td class="mono">${esc(c.email)}</td>
-      <td>${esc(c.empresa || '—')}</td>
-      <td><span class="badge ${c.estado === 'suscrito' ? 'badge-green' : 'badge-gray'}">${c.estado}</span></td>
-      <td>
-        <button class="btn btn-ghost" style="padding:5px 12px;font-size:12px" onclick="toggleStatus(${c.id})">
-          ${c.estado === 'suscrito' ? 'Desuscribir' : 'Resuscribir'}
-        </button>
-        <button class="btn btn-danger" style="padding:5px 12px;font-size:12px;margin-left:6px" onclick="removeContact(${c.id})">✕</button>
-      </td>
-    </tr>
-  `).join('');
-}
-
-function toggleAddContact() {
-  const f = document.getElementById('add-contact-form');
-  f.style.display = f.style.display === 'none' ? 'block' : 'none';
-}
-
-function addContact() {
-  const n = document.getElementById('nc-nombre').value.trim();
-  const e = document.getElementById('nc-email').value.trim();
-  const emp = document.getElementById('nc-empresa').value.trim();
-  if (!n || !e) { toast('Nombre y email son obligatorios', 'error'); return; }
-  contacts.push({ id: Date.now(), nombre: n, email: e, empresa: emp, estado: 'suscrito' });
-  saveContacts();
-  renderContacts();
+function renderAll() {
+  renderContacts(); renderInactivos(); renderDashboard();
+  updatePaisFilters(); updateTargetDescs(); updateSendCount(); updateSidebarStats();
   updatePreviewSelect();
-  renderDashboard();
-  document.getElementById('nc-nombre').value = '';
-  document.getElementById('nc-email').value = '';
-  document.getElementById('nc-empresa').value = '';
-  toggleAddContact();
+}
+
+// TEMPLATE GRID
+function buildTplGrid() {
+  document.getElementById('tpl-grid').innerHTML = TEMPLATES.map((t,i)=>`
+    <div class="tpl-card ${i===selectedTpl?'sel':''}" onclick="selectTpl(${i})">
+      <div class="tpl-thumb">${t.icon}</div>
+      <div class="tpl-name">${t.name}</div>
+    </div>`).join('');
+}
+function selectTpl(i) {
+  selectedTpl=i; buildTplGrid();
+  document.getElementById('ve-fields').style.display='block';
+  rebuildTpl();
+}
+function rebuildTpl() {
+  const g = id => document.getElementById(id)?.value||'';
+  document.getElementById('camp-html').value =
+    TEMPLATES[selectedTpl].build(g('ve-color')||'#6c4ef2',g('ve-title'),g('ve-body'),g('ve-btn'),g('ve-url'),g('ve-logo'));
+  updatePreview();
+}
+function vInsert(v) {
+  const el=document.getElementById('ve-body');
+  const s=el.selectionStart;
+  el.value=el.value.slice(0,s)+v+el.value.slice(el.selectionEnd);
+  el.selectionStart=el.selectionEnd=s+v.length;
+  el.focus(); rebuildTpl();
+}
+function swDtab(mode,el) {
+  activeDesign=mode;
+  document.querySelectorAll('.dtab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.dpanel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('dp-'+mode).classList.add('active');
+  updatePreview();
+}
+
+// IMPORT XLSX
+function dOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over');}
+function dLeave(){document.getElementById('drop-zone').classList.remove('drag-over');}
+function dDrop(e){e.preventDefault();dLeave();const f=e.dataTransfer.files[0];if(f)processFile(f);}
+function loadXLSX(e){const f=e.target.files[0];if(f)processFile(f);e.target.value='';}
+function processFile(file){
+  const isCSV=file.name.endsWith('.csv');
+  const reader=new FileReader();
+  reader.onload=(ev)=>{
+    try{
+      const wb=isCSV?XLSX.read(ev.target.result,{type:'string'}):XLSX.read(new Uint8Array(ev.target.result),{type:'array'});
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
+      if(!rows.length){toast('El archivo está vacío','error');return;}
+      parseRows(rows);
+    }catch(e){toast('Error: '+e.message,'error');}
+  };
+  isCSV?reader.readAsText(file):reader.readAsArrayBuffer(file);
+}
+function mapRow(row){
+  const get=(...ns)=>{for(const n of ns)for(const k of Object.keys(row))if(k.toLowerCase().replace(/\s/g,'')===n.toLowerCase().replace(/\s/g,''))return String(row[k]||'').trim();return '';};
+  const email=get('correo','email','e-mail','mail');
+  if(!email||!email.includes('@'))return null;
+  const nombre=get('nombre')||''; const apellido=get('apellido')||'';
+  const estatusRaw=get('estatus','status','estado')||'Inactivo';
+  const eosActivo=estatusRaw.toLowerCase().includes('activ');
+  return {
+    id:Date.now()+Math.random(), nombre:[nombre,apellido].filter(Boolean).join(' ')||email,
+    email, empresa:get('patrocinador','sponsor','empresa','company')||'',
+    ciudad:get('ciudad','city')||'', pais:get('país','pais','country')||'',
+    eosActivo, mailEstado: eosActivo?'suscrito':'habilitado'
+  };
+}
+function parseRows(rows){
+  pendingImport=[];let skipped=0;
+  for(const row of rows){
+    const m=mapRow(row);
+    if(!m){skipped++;continue;}
+    if(contacts.find(c=>c.email===m.email)||pendingImport.find(c=>c.email===m.email)){skipped++;continue;}
+    pendingImport.push(m);
+  }
+  const act=pendingImport.filter(c=>c.eosActivo).length;
+  const ina=pendingImport.filter(c=>!c.eosActivo).length;
+  document.getElementById('import-summary').textContent=
+    `📊 ${pendingImport.length} nuevos · ${skipped} omitidos | ✅ ${act} Activos · ⚠️ ${ina} Inactivos`;
+  document.getElementById('import-table').innerHTML=`<table>
+    <thead><tr><th>Nombre</th><th>Email</th><th>País</th><th>Estatus EOS</th><th>Correo</th></tr></thead>
+    <tbody>${[...pendingImport.filter(c=>c.eosActivo).slice(0,4),...pendingImport.filter(c=>!c.eosActivo).slice(0,4)].map(c=>`<tr>
+      <td class="bold">${esc(c.nombre)}</td><td class="mono">${esc(c.email)}</td>
+      <td>${esc(c.pais)}</td>
+      <td><span class="badge ${c.eosActivo?'b-activo':'b-inactivo'}">${c.eosActivo?'Activo':'Inactivo'}</span></td>
+      <td><span class="badge ${c.mailEstado==='suscrito'?'b-suscrito':'b-habilitado'}">${c.mailEstado}</span></td>
+    </tr>`).join('')}
+    ${pendingImport.length>8?`<tr><td colspan="5" style="color:var(--muted);text-align:center">… y ${pendingImport.length-8} más</td></tr>`:''}
+    </tbody></table>`;
+  document.getElementById('import-area').style.display='block';
+}
+function confirmImport(){if(!pendingImport.length)return;contacts.push(...pendingImport);saveContacts();renderAll();toast(`✅ ${pendingImport.length} contactos importados`);pendingImport=[];document.getElementById('import-area').style.display='none';}
+function cancelImport(){pendingImport=[];document.getElementById('import-area').style.display='none';}
+
+// CONTACTS
+function saveContacts(){localStorage.setItem('mb_v2_contacts',JSON.stringify(contacts));}
+function renderContacts(){
+  const search=(document.getElementById('s-search')?.value||'').toLowerCase();
+  const filterPais=document.getElementById('s-pais')?.value||'';
+  const filtered=contacts.filter(c=>{
+    if(search&&!c.nombre.toLowerCase().includes(search)&&!c.email.toLowerCase().includes(search))return false;
+    if(filterPais&&c.pais!==filterPais)return false;
+    if(activeChip==='activo'&&!c.eosActivo)return false;
+    if(activeChip==='inactivo'&&c.eosActivo)return false;
+    return true;
+  });
+  document.getElementById('ccount').textContent=`${filtered.length} de ${contacts.length}`;
+  document.getElementById('ctitle').textContent=`— ${contacts.length} total`;
+  const tbody=document.getElementById('ctbody');
+  if(!filtered.length){tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:28px">Sin contactos. Importa un XLSX.</td></tr>';return;}
+  tbody.innerHTML=filtered.map(c=>`<tr>
+    <td><input type="checkbox" class="rcheck" data-id="${c.id}"></td>
+    <td class="bold">${esc(c.nombre)}</td>
+    <td class="mono">${esc(c.email)}</td>
+    <td style="font-size:12px">${esc(c.pais||'—')}</td>
+    <td><span class="badge ${c.eosActivo?'b-activo':'b-inactivo'}">${c.eosActivo?'Activo':'Inactivo'}</span></td>
+    <td><span class="badge ${mailBadge(c.mailEstado)}">${c.mailEstado}</span></td>
+    <td style="display:flex;gap:5px;flex-wrap:wrap">
+      <button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="cycleMailState(${c.id})">${nextLabel(c.mailEstado)}</button>
+      <button class="btn btn-danger" style="padding:4px 9px;font-size:11px" onclick="removeContact(${c.id})">✕</button>
+    </td>
+  </tr>`).join('');
+}
+function mailBadge(s){return s==='suscrito'?'b-suscrito':s==='habilitado'?'b-habilitado':'b-desuscrito';}
+function nextLabel(s){return s==='suscrito'?'→ Deshabilitar':s==='habilitado'?'→ Suscribir':'→ Habilitar';}
+function cycleMailState(id){
+  contacts=contacts.map(c=>{if(c.id!==id)return c;const n=c.mailEstado==='suscrito'?'desuscrito':c.mailEstado==='habilitado'?'suscrito':'habilitado';return{...c,mailEstado:n};});
+  saveContacts();renderContacts();renderInactivos();updateTargetDescs();updateSendCount();updateSidebarStats();
+}
+function renderInactivos(){
+  const search=(document.getElementById('si-search')?.value||'').toLowerCase();
+  const fp=document.getElementById('si-pais')?.value||'';
+  const inactivos=contacts.filter(c=>{
+    if(c.eosActivo)return false;
+    if(search&&!c.nombre.toLowerCase().includes(search)&&!c.email.toLowerCase().includes(search))return false;
+    if(fp&&c.pais!==fp)return false;
+    return true;
+  });
+  document.getElementById('icount').textContent=`${inactivos.length} inactivos`;
+  document.getElementById('ititle').textContent=`— ${inactivos.length}`;
+  const tbody=document.getElementById('itbody');
+  if(!inactivos.length){tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:28px">No hay inactivos. Importa el XLSX de EOS.</td></tr>';return;}
+  tbody.innerHTML=inactivos.map(c=>`<tr>
+    <td><input type="checkbox" class="icheck" data-id="${c.id}"></td>
+    <td class="bold">${esc(c.nombre)}</td>
+    <td class="mono">${esc(c.email)}</td>
+    <td style="font-size:12px">${esc(c.pais||'—')}</td>
+    <td style="font-size:12px">${esc(c.ciudad||'—')}</td>
+    <td>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" ${c.mailEstado!=='desuscrito'?'checked':''} onchange="toggleHabilitar(${c.id},this.checked)" style="width:auto;accent-color:var(--yellow)">
+        <span class="badge ${c.mailEstado==='desuscrito'?'b-desuscrito':'b-habilitado'}">${c.mailEstado==='desuscrito'?'No enviar':'Habilitado'}</span>
+      </label>
+    </td>
+    <td><button class="btn btn-green" style="padding:5px 10px;font-size:11px" onclick="markSuscrito(${c.id})">✅ Suscribir</button></td>
+  </tr>`).join('');
+}
+function toggleHabilitar(id,checked){
+  contacts=contacts.map(c=>c.id===id?{...c,mailEstado:checked?'habilitado':'desuscrito'}:c);
+  saveContacts();renderInactivos();updateTargetDescs();updateSendCount();
+}
+function markSuscrito(id){
+  contacts=contacts.map(c=>c.id===id?{...c,mailEstado:'suscrito',eosActivo:true}:c);
+  saveContacts();renderAll();toast('✅ Usuario marcado como suscrito y activo');
+}
+function habilitarTodosInactivos(){
+  let n=0;
+  contacts=contacts.map(c=>{if(!c.eosActivo&&c.mailEstado==='desuscrito'){n++;return{...c,mailEstado:'habilitado'};}return c;});
+  saveContacts();renderAll();toast(`✅ ${n} inactivos habilitados para correo`);
+}
+function goSendInactive(){
+  selTarget('inactivos');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('tab-campana').classList.add('active');
+  document.querySelectorAll('nav a')[3].classList.add('active');
+  document.getElementById('page-title').textContent='✉️ Campaña';
+  updatePreviewSelect();updateSendCount();
+}
+function setChip(chip){
+  activeChip=chip;
+  document.querySelectorAll('.fchip').forEach(c=>c.classList.remove('on','on-g','on-y'));
+  const map={todos:'on',activo:'on-g',inactivo:'on-y'};
+  document.getElementById('chip-'+chip)?.classList.add(map[chip]);
+  renderContacts();
+}
+function toggleAF(){const f=document.getElementById('add-form');f.style.display=f.style.display==='none'?'block':'none';}
+function addContact(){
+  const n=document.getElementById('f-nombre').value.trim();
+  const e=document.getElementById('f-email').value.trim();
+  if(!n||!e){toast('Nombre y email obligatorios','error');return;}
+  contacts.push({id:Date.now(),nombre:n,email:e,empresa:document.getElementById('f-empresa').value.trim(),ciudad:'',pais:'',eosActivo:true,mailEstado:'suscrito'});
+  saveContacts();renderAll();toggleAF();
+  ['f-nombre','f-email','f-empresa'].forEach(id=>document.getElementById(id).value='');
   toast('✅ Contacto agregado');
 }
+function removeContact(id){contacts=contacts.filter(c=>c.id!==id);saveContacts();renderAll();}
+function toggleAll(cb){document.querySelectorAll('.rcheck').forEach(c=>c.checked=cb.checked);}
+function toggleIAll(cb){document.querySelectorAll('.icheck').forEach(c=>c.checked=cb.checked);}
+function getSelIds(){return[...document.querySelectorAll('.rcheck:checked')].map(c=>Number(c.dataset.id));}
+function bulkMail(estado){const ids=getSelIds();if(!ids.length){toast('Selecciona contactos','error');return;}contacts=contacts.map(c=>ids.includes(c.id)?{...c,mailEstado:estado}:c);saveContacts();renderContacts();updateTargetDescs();updateSendCount();toast(`✅ ${ids.length} actualizados`);}
+function bulkDelete(){const ids=getSelIds();if(!ids.length){toast('Selecciona contactos','error');return;}if(!confirm(`¿Eliminar ${ids.length}?`))return;contacts=contacts.filter(c=>!ids.includes(c.id));saveContacts();renderAll();}
+function clearAll(){if(!confirm('¿Eliminar TODOS los contactos?'))return;contacts=[];saveContacts();renderAll();toast('🗑 Limpizado','info');}
 
-function removeContact(id) {
-  contacts = contacts.filter(c => c.id !== id);
-  saveContacts();
-  renderContacts();
-  updatePreviewSelect();
-  renderDashboard();
+// TARGET
+function getTargetContacts(){
+  if(currentTarget==='suscritos') return contacts.filter(c=>c.mailEstado==='suscrito');
+  if(currentTarget==='activos')   return contacts.filter(c=>c.eosActivo&&c.mailEstado!=='desuscrito');
+  if(currentTarget==='inactivos') return contacts.filter(c=>!c.eosActivo&&c.mailEstado==='habilitado');
+  if(currentTarget==='todos')     return contacts.filter(c=>c.mailEstado!=='desuscrito');
+  return [];
 }
-
-function toggleStatus(id) {
-  contacts = contacts.map(c => c.id === id ? { ...c, estado: c.estado === 'suscrito' ? 'desuscrito' : 'suscrito' } : c);
-  saveContacts();
-  renderContacts();
-  renderDashboard();
+function selTarget(t){
+  currentTarget=t;
+  document.querySelectorAll('.topt').forEach(el=>el.classList.remove('sel'));
+  document.getElementById('topt-'+t)?.classList.add('sel');
+  const radio=document.querySelector(`input[value="${t}"]`);if(radio)radio.checked=true;
+  updateSendCount();updatePreviewSelect();
 }
-
-function importCSV() { document.getElementById('csvFile').click(); }
-
-function loadCSV(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = (ev) => {
-    const lines = ev.target.result.split('\n').map(l => l.trim()).filter(Boolean);
-    const headers = lines[0].toLowerCase().split(',').map(h => h.trim());
-    let added = 0;
-    for (let i = 1; i < lines.length; i++) {
-      const vals = lines[i].split(',').map(v => v.trim().replace(/^["']|["']$/g, ''));
-      const row = {};
-      headers.forEach((h, idx) => row[h] = vals[idx] || '');
-      const email = row.email || row.correo;
-      const nombre = row.nombre || row.name || row.nombre_completo || email;
-      if (email && email.includes('@')) {
-        if (!contacts.find(c => c.email === email)) {
-          contacts.push({ id: Date.now() + i, nombre, email, empresa: row.empresa || row.company || '', estado: 'suscrito' });
-          added++;
-        }
-      }
-    }
-    saveContacts();
-    renderContacts();
-    updatePreviewSelect();
-    renderDashboard();
-    toast(`✅ ${added} contactos importados del CSV`);
-    e.target.value = '';
-  };
-  reader.readAsText(file);
+function updateTargetDescs(){
+  const sus=contacts.filter(c=>c.mailEstado==='suscrito').length;
+  const act=contacts.filter(c=>c.eosActivo&&c.mailEstado!=='desuscrito').length;
+  const ina=contacts.filter(c=>!c.eosActivo&&c.mailEstado==='habilitado').length;
+  const tod=contacts.filter(c=>c.mailEstado!=='desuscrito').length;
+  const s=id=>{const el=document.getElementById(id);if(el)el.textContent=arguments[1];};
+  document.getElementById('tdesc-suscritos') && (document.getElementById('tdesc-suscritos').textContent=`${sus} suscritos`);
+  document.getElementById('tdesc-activos')   && (document.getElementById('tdesc-activos').textContent=`${act} activos EOS`);
+  document.getElementById('tdesc-inactivos') && (document.getElementById('tdesc-inactivos').textContent=`${ina} inactivos habilitados`);
+  document.getElementById('tdesc-todos')     && (document.getElementById('tdesc-todos').textContent=`${tod} en total`);
 }
+function updateSendCount(){const n=getTargetContacts().length;const el=document.getElementById('send-count');if(el)el.textContent=`${n} destinatarios`;}
 
-// ── INTERPOLATE ──
-function interp(text, c) {
-  return text
-    .replace(/\{\{nombre\}\}/g, c.nombre || '')
-    .replace(/\{\{empresa\}\}/g, c.empresa || '')
-    .replace(/\{\{email\}\}/g,   c.email || '');
-}
+// INTERP
+function interp(text,c){return text.replace(/\{\{nombre\}\}/g,c.nombre||'').replace(/\{\{empresa\}\}/g,c.empresa||'').replace(/\{\{email\}\}/g,c.email||'').replace(/\{\{ciudad\}\}/g,c.ciudad||'').replace(/\{\{pais\}\}/g,c.pais||'');}
+function getBody(c){return activeDesign==='texto'?interp(document.getElementById('camp-body').value,c):interp(document.getElementById('camp-html').value,c);}
 
-// ── PREVIEW ──
-function updatePreviewSelect() {
-  const sel = document.getElementById('preview-select');
-  if (!sel) return;
-  sel.innerHTML = contacts.map(c => `<option value="${c.id}">${esc(c.nombre)}</option>`).join('');
+// PREVIEW
+function updatePreviewSelect(){
+  const sel=document.getElementById('preview-select');if(!sel)return;
+  const pool=getTargetContacts().length?getTargetContacts():contacts;
+  sel.innerHTML=pool.map(c=>`<option value="${c.id}">${esc(c.nombre)} (${c.eosActivo?'Activo':'Inactivo'})</option>`).join('');
   updatePreview();
 }
-
-function updatePreview() {
-  const sel = document.getElementById('preview-select');
-  if (!sel) return;
-  const contact = contacts.find(c => c.id == sel.value) || contacts[0];
-  if (!contact) return;
-  const asunto = document.getElementById('camp-asunto').value;
-  const body = document.getElementById('camp-body').value;
-  document.getElementById('prev-to').textContent = 'Para: ' + contact.email;
-  document.getElementById('prev-subject').textContent = interp(asunto, contact);
-  document.getElementById('prev-body').textContent = interp(body, contact);
+function updatePreview(){
+  const sel=document.getElementById('preview-select');if(!sel)return;
+  const c=contacts.find(x=>x.id==sel.value)||getTargetContacts()[0]||contacts[0];
+  if(!c)return;
+  document.getElementById('prev-to').textContent='Para: '+c.email;
+  document.getElementById('prev-subject').textContent=interp(document.getElementById('camp-asunto').value,c);
+  const body=getBody(c);
+  const iframe=document.getElementById('prev-iframe');
+  const pre=document.getElementById('prev-pre');
+  if(activeDesign==='texto'){iframe.style.display='none';pre.style.display='block';pre.textContent=body;}
+  else{iframe.style.display='block';pre.style.display='none';iframe.srcdoc=body;}
 }
+function togglePreview(){const p=document.getElementById('preview-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')updatePreview();}
+function insertVar(fieldId,v){const el=document.getElementById(fieldId);const tag='{{'+v+'}}';const s=el.selectionStart;el.value=el.value.slice(0,s)+tag+el.value.slice(el.selectionEnd);el.selectionStart=el.selectionEnd=s+tag.length;el.focus();updatePreview();}
 
-function togglePreview() {
-  const p = document.getElementById('preview-panel');
-  p.style.display = p.style.display === 'none' ? 'block' : 'none';
-  if (p.style.display === 'block') updatePreview();
-}
-
-// ── INSERT VAR ──
-function insertVar(fieldId, varName) {
-  const el = document.getElementById(fieldId);
-  const tag = '{{' + varName + '}}';
-  const start = el.selectionStart;
-  const end = el.selectionEnd;
-  el.value = el.value.slice(0, start) + tag + el.value.slice(end);
-  el.selectionStart = el.selectionEnd = start + tag.length;
-  el.focus();
-  updatePreview();
-}
-
-// ── SEND CAMPAIGN ──
-async function sendCampaign() {
-  if (!isConfigured()) {
-    toast('❌ Configura EmailJS primero (pestaña Configuración)', 'error');
-    return;
-  }
-
-  const suscritos = contacts.filter(c => c.estado === 'suscrito');
-  if (!suscritos.length) { toast('❌ No hay contactos suscritos', 'error'); return; }
-
-  const campNombre = document.getElementById('camp-nombre').value || 'Campaña sin nombre';
-  const asunto = document.getElementById('camp-asunto').value;
-  const body = document.getElementById('camp-body').value;
-
-  if (!asunto.trim() || !body.trim()) { toast('❌ Asunto y cuerpo son obligatorios', 'error'); return; }
-
-  // Build progress UI
-  const statusDiv = document.getElementById('send-status');
-  statusDiv.style.display = 'block';
-  statusDiv.innerHTML = `
-    <div style="background:#0a0a14;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px">
-      <div style="font-weight:700;margin-bottom:12px;font-size:13px">📨 Enviando campaña a ${suscritos.length} contactos...</div>
-      <div id="progress-list">
-        ${suscritos.map(c => `
-          <div class="progress-item" id="prog-${c.id}">
-            <span class="icon"><span class="sending-spinner"></span></span>
-            <span style="color:#888">${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-
-  document.getElementById('btn-send').disabled = true;
-  emailjs.init({ publicKey: config.pubkey });
-
-  let ok = 0; let fail = 0;
-  sendResults = [];
-
-  for (const c of suscritos) {
-    const el = document.getElementById('prog-' + c.id);
-    try {
-      await emailjs.send(config.service, config.template, {
-        to_email:  c.email,
-        to_name:   c.nombre,
-        subject:   interp(asunto, c),
-        message:   interp(body, c),
-        from_name: config.fromName || 'MailBot',
-      });
-      if (el) el.innerHTML = `<span class="icon">✅</span><span>${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span>`;
-      sendResults.push({ ...c, exito: true });
+// SEND
+async function sendCampaign(){
+  if(!isConfigured()){toast('❌ Configura EmailJS primero','error');return;}
+  const targets=getTargetContacts();
+  if(!targets.length){toast('❌ No hay destinatarios para este filtro','error');return;}
+  const asunto=document.getElementById('camp-asunto').value.trim();
+  if(!asunto){toast('❌ El asunto es obligatorio','error');return;}
+  const campNombre=document.getElementById('camp-nombre').value||'Campaña';
+  const sd=document.getElementById('send-status');
+  sd.style.display='block';
+  sd.innerHTML=`<div style="background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px">
+    <div style="font-weight:700;margin-bottom:12px;font-size:13px">📨 Enviando a ${targets.length} destinatarios…</div>
+    <div id="prog-list">${targets.map(c=>`<div class="prog-item" id="prog-${c.id}"><span class="prog-icon"><span class="spinner"></span></span><span style="color:#666">${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span></div>`).join('')}</div>
+  </div>`;
+  document.getElementById('btn-send').disabled=true;
+  emailjs.init({publicKey:config.pubkey});
+  let ok=0,fail=0;
+  for(const c of targets){
+    const el=document.getElementById('prog-'+c.id);
+    try{
+      await emailjs.send(config.service,config.template,{to_email:c.email,to_name:c.nombre,subject:interp(asunto,c),message:getBody(c),from_name:config.fromName||'EOS Community'});
+      if(el)el.innerHTML=`<span class="prog-icon">✅</span><span>${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span>`;
+      // Si era inactivo habilitado, marcar como suscrito automáticamente
+      if(!c.eosActivo&&c.mailEstado==='habilitado'){contacts=contacts.map(x=>x.id===c.id?{...x,mailEstado:'suscrito'}:x);}
       ok++;
-    } catch(err) {
-      if (el) el.innerHTML = `<span class="icon">❌</span><span style="color:#f87171">${esc(c.nombre)} — ${err.text || 'error'}</span>`;
-      sendResults.push({ ...c, exito: false });
+    }catch(err){
+      if(el)el.innerHTML=`<span class="prog-icon">❌</span><span style="color:var(--red)">${esc(c.nombre)} — ${err.text||'error'}</span>`;
       fail++;
     }
-    await delay(300); // evitar rate limit
+    await delay(400);
   }
+  saveContacts();
+  campaigns.push({id:Date.now(),nombre:campNombre,asunto,enviados:ok,fallidos:fail,fecha:new Date().toLocaleDateString('es-CO'),objetivo:currentTarget});
+  localStorage.setItem('mb_v2_campaigns',JSON.stringify(campaigns));
+  sd.innerHTML+=`<div style="background:${ok>0?'#0a2518':'#280d0d'};border:1px solid ${ok>0?'#1a4731':'#4a1a1a'};border-radius:8px;padding:14px;font-weight:700;margin-top:12px;color:${ok>0?'var(--green)':'var(--red)'}">${ok>0?`🎉 ${ok} enviados`:''} ${fail>0?`· ❌ ${fail} fallidos`:''}</div>`;
+  document.getElementById('btn-send').disabled=false;
+  renderAll();toast(`🚀 ${ok} enviados, ${fail} errores`);
+}
 
-  // Save campaign
-  campaigns.push({
-    id: Date.now(),
-    nombre: campNombre,
-    asunto,
-    enviados: ok,
-    fallidos: fail,
-    fecha: new Date().toLocaleDateString('es-CO'),
-    estado: 'enviada',
+// DASHBOARD
+function renderDashboard(){
+  const act=contacts.filter(c=>c.eosActivo).length;
+  const ina=contacts.filter(c=>!c.eosActivo).length;
+  const tot=contacts.length;
+  const env=campaigns.reduce((a,c)=>a+(c.enviados||0),0);
+  document.getElementById('ds-activos').textContent=act;
+  document.getElementById('ds-inactivos').textContent=ina;
+  document.getElementById('ds-enviados').textContent=env;
+  document.getElementById('ds-campanas').textContent=campaigns.length;
+  const pct=tot?Math.round(act/tot*100):0;
+  document.getElementById('bar-act').style.width=pct+'%';
+  document.getElementById('bar-ina').style.width=(100-pct)+'%';
+  document.getElementById('ds-pct').textContent=tot?`${pct}% activos de ${tot} total`:'';
+  const div=document.getElementById('dash-camps');
+  if(!campaigns.length){div.innerHTML='<p style="color:var(--muted);font-size:13px">Sin campañas.</p>';return;}
+  div.innerHTML=`<table><thead><tr><th>Nombre</th><th>Objetivo</th><th>Enviados</th><th>Fallidos</th><th>Fecha</th></tr></thead>
+  <tbody>${[...campaigns].reverse().slice(0,10).map(c=>`<tr>
+    <td class="bold">${esc(c.nombre)}</td>
+    <td><span class="badge b-habilitado">${c.objetivo||'todos'}</span></td>
+    <td style="color:var(--green)">${c.enviados}</td>
+    <td style="color:${c.fallidos>0?'var(--red)':'var(--muted)'}">${c.fallidos||0}</td>
+    <td class="mono">${c.fecha}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+function updateSidebarStats(){
+  document.getElementById('sb-activos').textContent=contacts.filter(c=>c.eosActivo).length;
+  document.getElementById('sb-inactivos').textContent=contacts.filter(c=>!c.eosActivo).length;
+  document.getElementById('sb-total').textContent=contacts.length;
+  document.getElementById('sb-enviados').textContent=campaigns.reduce((a,c)=>a+(c.enviados||0),0);
+}
+function updatePaisFilters(){
+  const paises=[...new Set(contacts.map(c=>c.pais).filter(Boolean))].sort();
+  ['s-pais','si-pais'].forEach(id=>{
+    const sel=document.getElementById(id);if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">🌍 País</option>'+paises.map(p=>`<option value="${esc(p)}" ${p===cur?'selected':''}>${esc(p)}</option>`).join('');
   });
-  localStorage.setItem('mb_campaigns', JSON.stringify(campaigns));
-
-  statusDiv.innerHTML += `
-    <div style="background:${ok > 0 ? '#0d2918' : '#2a0d0d'};border:1px solid ${ok > 0 ? '#1a4731' : '#4a1a1a'};border-radius:8px;padding:14px 18px;font-weight:700;font-size:14px;color:${ok > 0 ? '#3dd68c' : '#f87171'}">
-      ${ok > 0 ? `🎉 ${ok} emails enviados correctamente` : ''}${fail > 0 ? ` · ❌ ${fail} fallidos` : ''}
-    </div>
-  `;
-
-  document.getElementById('btn-send').disabled = false;
-  renderDashboard();
-  toast(`🚀 Campaña enviada: ${ok} ok, ${fail} errores`);
 }
 
-// ── DASHBOARD ──
-function renderDashboard() {
-  const suscritos = contacts.filter(c => c.estado === 'suscrito').length;
-  const totalEnv = campaigns.reduce((a, c) => a + (c.enviados || 0), 0);
-
-  document.getElementById('stat-activos').textContent = suscritos;
-  document.getElementById('stat-total-c').textContent = contacts.length + ' total';
-  document.getElementById('stat-enviados').textContent = totalEnv;
-  document.getElementById('stat-campanas').textContent = campaigns.length;
-  document.getElementById('stat-campanas-sub').textContent = campaigns.filter(c => c.estado === 'enviada').length + ' enviadas';
-  updateEjsBadge();
-
-  const div = document.getElementById('dashboard-campaigns');
-  if (!campaigns.length) {
-    div.innerHTML = '<p style="color:#444;font-size:13px">Aún no hay campañas enviadas.</p>';
-    return;
-  }
-  div.innerHTML = `
-    <table>
-      <thead><tr>
-        <th>Nombre</th><th>Enviados</th><th>Fallidos</th><th>Fecha</th><th>Estado</th>
-      </tr></thead>
-      <tbody>
-        ${campaigns.map(c => `<tr>
-          <td class="bold">${esc(c.nombre)}</td>
-          <td>${c.enviados}</td>
-          <td style="color:${c.fallidos > 0 ? '#f87171' : '#555'}">${c.fallidos || 0}</td>
-          <td class="mono">${c.fecha}</td>
-          <td><span class="badge badge-green">${c.estado}</span></td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
-  `;
+// CONFIG
+function loadConfig(){
+  if(config.pubkey)   document.getElementById('cfg-pubkey').value=config.pubkey;
+  if(config.service)  document.getElementById('cfg-service').value=config.service;
+  if(config.template) document.getElementById('cfg-template').value=config.template;
+  if(config.fromName) document.getElementById('cfg-fromname').value=config.fromName;
+}
+function saveConfig(){
+  config={pubkey:document.getElementById('cfg-pubkey').value.trim(),service:document.getElementById('cfg-service').value.trim(),template:document.getElementById('cfg-template').value.trim(),fromName:document.getElementById('cfg-fromname').value.trim()};
+  localStorage.setItem('mb_v2_config',JSON.stringify(config));
+}
+function isConfigured(){return config.pubkey&&config.service&&config.template;}
+async function testConfig(){
+  const res=document.getElementById('test-res');
+  if(!isConfigured()){res.textContent='❌ Completa la config';res.style.color='var(--red)';return;}
+  res.textContent='⏳…';res.style.color='#aaa';
+  try{emailjs.init({publicKey:config.pubkey});await emailjs.send(config.service,config.template,{to_email:'prueba@prueba.com',to_name:'Prueba',subject:'✅ MailBot EOS OK',message:'Test OK',from_name:config.fromName||'MailBot'});res.textContent='✅ Enviado';res.style.color='var(--green)';}
+  catch(e){res.textContent='❌ '+(e.text||e.message);res.style.color='var(--red)';}
 }
 
-// ── HELPERS ──
-function esc(s) { return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-function toast(msg, type = 'success') {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = type;
-  t.style.display = 'block';
-  setTimeout(() => { t.style.display = 'none'; }, 3500);
+// NAV
+function goto(tab,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  el.classList.add('active');
+  const titles={dashboard:'Dashboard',contactos:'Contactos',inactivos:'⚠️ Inactivos',campana:'✉️ Campaña',config:'Configuración'};
+  document.getElementById('page-title').textContent=titles[tab]||tab;
+  if(tab==='campana'){updatePreviewSelect();updateSendCount();updateTargetDescs();}
+  if(tab==='dashboard')renderDashboard();
+  if(tab==='contactos'){updatePaisFilters();renderContacts();}
+  if(tab==='inactivos'){updatePaisFilters();renderInactivos();}
 }
+
+// HELPERS
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=type;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>{t.style.display='none';},3800);}
 </script>
 </body>
 </html>
