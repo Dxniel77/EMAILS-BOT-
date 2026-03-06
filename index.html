@@ -6,213 +6,376 @@
 <title>MailBot EOS — Panel de Envíos</title>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #07070e; --surface: #0e0e1c; --surface2: #13132a;
-  --border: #1c1c32; --accent: #6c4ef2; --accent2: #a78bfa;
-  --green: #22c55e; --red: #f87171; --yellow: #fbbf24; --blue: #38bdf8;
-  --text: #e4e2f0; --muted: #4a4a6a;
+  --bg: #07070e; --surface: #0e0e1c; --surface2: #131328;
+  --border: #1c1c38; --accent: #6c4ef2; --accent2: #a78bfa;
+  --green: #22c55e; --red: #f87171; --yellow: #fbbf24; --blue: #38bdf8; --orange: #fb923c;
+  --text: #e4e2f0; --muted: #4a4a6a; --muted2: #6a6890;
   --mono: 'DM Mono', monospace; --sans: 'Syne', sans-serif;
+  --radius: 14px; --shadow: 0 4px 24px rgba(0,0,0,.4);
 }
-body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
-aside { width: 240px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-.logo { padding: 28px 24px 20px; border-bottom: 1px solid var(--border); }
-.logo h1 { font-size: 24px; font-weight: 800; letter-spacing: -1.5px; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; overflow: hidden; height: 100vh; }
+
+/* ══ SIDEBAR ══ */
+aside {
+  width: 250px; min-width: 250px; background: var(--surface);
+  border-right: 1px solid var(--border); display: flex; flex-direction: column;
+  transition: width .2s;
+}
+.logo { padding: 26px 22px 18px; border-bottom: 1px solid var(--border); }
+.logo-mark { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.logo-icon { width: 34px; height: 34px; background: linear-gradient(135deg,#6c4ef2,#a78bfa); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.logo h1 { font-size: 20px; font-weight: 800; letter-spacing: -1px; }
 .logo h1 em { color: var(--accent2); font-style: normal; }
-.logo p { font-size: 10px; color: var(--muted); font-family: var(--mono); margin-top: 4px; text-transform: uppercase; letter-spacing: 2px; }
-nav { padding: 10px 0; flex: 1; }
-nav a { display: flex; align-items: center; gap: 10px; padding: 12px 22px; cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 600; border-left: 3px solid transparent; transition: all .15s; }
-nav a .ni { font-size: 15px; width: 18px; text-align: center; }
-nav a.active, nav a:hover { color: var(--text); background: #16162e; border-left-color: var(--accent); }
-.sidebar-stats { padding: 16px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.ss-card { background: #0a0a1a; border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
-.ss-label { font-size: 9px; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-family: var(--mono); }
-.ss-val { font-size: 20px; font-weight: 800; }
-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-header { padding: 18px 32px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-header h2 { font-size: 20px; font-weight: 800; }
-.content { padding: 28px 32px; overflow-y: auto; flex: 1; }
+.logo p { font-size: 10px; color: var(--muted); font-family: var(--mono); letter-spacing: 2px; text-transform: uppercase; }
+
+nav { padding: 10px 10px; flex: 1; overflow-y: auto; }
+.nav-section { font-size: 9px; color: var(--muted); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 14px 12px 6px; font-family: var(--mono); }
+nav a {
+  display: flex; align-items: center; gap: 11px; padding: 10px 14px;
+  cursor: pointer; color: var(--muted2); font-size: 13px; font-weight: 600;
+  border-radius: 10px; transition: all .15s; margin-bottom: 2px; position: relative;
+}
+nav a .ni { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+nav a .nbadge { margin-left: auto; background: var(--yellow); color: #000; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 10px; font-family: var(--mono); }
+nav a .nbadge.red { background: var(--red); color: #fff; }
+nav a.active { color: #fff; background: linear-gradient(135deg,#1e1040,#16102e); box-shadow: inset 0 0 0 1px rgba(108,78,242,.4); }
+nav a.active .ni-wrap { color: var(--accent2); }
+nav a:hover:not(.active) { background: #13132a; color: var(--text); }
+
+.sidebar-bottom { border-top: 1px solid var(--border); }
+.mini-stats { padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ms { background: #0a0a1a; border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; }
+.ms-label { font-size: 9px; color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; font-family: var(--mono); }
+.ms-val { font-size: 22px; font-weight: 800; line-height: 1; }
+.ejs-status { padding: 12px 14px; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.ejs-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+.ejs-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.ejs-text { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+
+/* ══ MAIN ══ */
+main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.topbar { padding: 16px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; background: var(--surface); }
+.topbar h2 { font-size: 18px; font-weight: 800; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.date-chip { font-size: 11px; color: var(--muted); font-family: var(--mono); background: #0a0a18; border: 1px solid var(--border); border-radius: 8px; padding: 5px 12px; }
+
+.content { padding: 24px 28px; overflow-y: auto; flex: 1; }
 .tab { display: none; }
-.tab.active { display: block; }
-.card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px 26px; margin-bottom: 18px; }
-.card-title { font-size: 15px; font-weight: 700; margin-bottom: 18px; display: flex; align-items: center; gap: 8px; }
+.tab.active { display: block; animation: fadein .2s ease; }
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ══ CARDS ══ */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px 24px; margin-bottom: 16px; }
+.card-title { font-size: 14px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
 .card-title small { font-size: 11px; color: var(--muted); font-family: var(--mono); font-weight: 400; }
+
+/* ══ ALERT ══ */
+.alert { border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; display: flex; gap: 12px; align-items: flex-start; font-size: 13px; line-height: 1.7; }
+.alert-warn { background: #1e1500; border: 1px solid #4a3800; }
+.alert-warn strong { color: var(--yellow); }
+.alert-err  { background: #200a0a; border: 1px solid #5a1a1a; }
+.alert-err strong { color: var(--red); }
+.alert-info { background: #0d1020; border: 1px solid #1a2a50; }
+.alert-info strong { color: var(--blue); }
+.alert-ok   { background: #0a2018; border: 1px solid #1a4731; }
+.alert-ok strong { color: var(--green); }
+.alert-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+
+/* ══ FORMS ══ */
 label { display: block; font-size: 10px; color: #555; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
-input, textarea, select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 14px; font-family: var(--sans); font-size: 13px; outline: none; transition: border-color .2s; }
-input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+input, textarea, select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); padding: 10px 14px; font-family: var(--sans); font-size: 13px; outline: none; transition: border-color .2s, box-shadow .2s; }
+input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,78,242,.15); }
 textarea { font-family: var(--mono); font-size: 12px; resize: vertical; line-height: 1.75; }
-.field { margin-bottom: 16px; }
-.btn { padding: 9px 20px; border-radius: 8px; border: none; cursor: pointer; font-family: var(--sans); font-weight: 700; font-size: 12px; transition: all .15s; white-space: nowrap; }
+.field { margin-bottom: 14px; }
+.field-row { display: grid; gap: 12px; }
+.field-row.c2 { grid-template-columns: 1fr 1fr; }
+.field-row.c3 { grid-template-columns: 1fr 1fr 1fr; }
+.field-row.c4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+
+/* ══ BUTTONS ══ */
+.btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 9px; border: none; cursor: pointer; font-family: var(--sans); font-weight: 700; font-size: 12px; transition: all .15s; white-space: nowrap; }
 .btn:active { transform: scale(.97); }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: #7c5ef2; }
-.btn-primary:disabled { opacity: .35; cursor: not-allowed; }
-.btn-ghost { background: #1a1a2e; color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 7px; }
+.btn-lg { padding: 13px 28px; font-size: 14px; border-radius: 12px; }
+.btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 14px rgba(108,78,242,.35); }
+.btn-primary:hover { background: #7c5ef2; box-shadow: 0 6px 20px rgba(108,78,242,.45); }
+.btn-primary:disabled { opacity: .35; cursor: not-allowed; box-shadow: none; }
+.btn-ghost { background: #1a1a2e; color: var(--text); border: 1px solid var(--border); }
 .btn-ghost:hover { background: #22223a; }
-.btn-outline { background: transparent; color: var(--accent2); border: 1px solid #3d2a7a; }
-.btn-outline:hover { background: #1a1030; }
-.btn-danger { background: #2a0d0d; color: var(--red); border: 1px solid #4a1a1a; }
+.btn-outline { background: transparent; color: var(--accent2); border: 1px solid rgba(108,78,242,.4); }
+.btn-outline:hover { background: rgba(108,78,242,.08); }
+.btn-danger { background: #2a0d0d; color: var(--red); border: 1px solid #5a1a1a; }
+.btn-danger:hover { background: #3a1010; }
 .btn-green { background: #0d2918; color: var(--green); border: 1px solid #1a4731; }
 .btn-green:hover { background: #112e1e; }
-.btn-yellow { background: #2a1e00; color: var(--yellow); border: 1px solid #4a3800; }
-.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
-.badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; flex-shrink:0; }
-.b-activo    { background: #0a2018; color: var(--green);   border: 1px solid #1a4028; }
-.b-activo::before { background: var(--green); }
-.b-inactivo  { background: #1e1a08; color: var(--yellow);  border: 1px solid #3a3010; }
-.b-inactivo::before { background: var(--yellow); }
-.b-suscrito  { background: #0d2918; color: var(--green);   border: 1px solid #1a4731; }
-.b-suscrito::before { background: var(--green); }
-.b-habilitado{ background: #1a1030; color: var(--accent2); border: 1px solid #3d2a7a; }
-.b-habilitado::before { background: var(--accent2); }
-.b-desuscrito{ background: #1a1a2a; color: #555;           border: 1px solid #2a2a3a; }
-.b-desuscrito::before { background: #555; }
+.btn-yellow { background: #211800; color: var(--yellow); border: 1px solid #4a3800; }
+.btn-yellow:hover { background: #2a2000; }
+
+/* ══ BADGES ══ */
+.badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.badge::before { content:''; width:6px; height:6px; border-radius:50%; flex-shrink:0; }
+.b-activo     { background:#0a2018; color:var(--green);   border:1px solid #1a4028; } .b-activo::before   { background:var(--green); }
+.b-inactivo   { background:#1e1a08; color:var(--yellow);  border:1px solid #3a3010; } .b-inactivo::before { background:var(--yellow); }
+.b-suscrito   { background:#0d2918; color:var(--green);   border:1px solid #1a4731; } .b-suscrito::before { background:var(--green); }
+.b-habilitado { background:#160e30; color:var(--accent2); border:1px solid #3d2a7a; } .b-habilitado::before { background:var(--accent2); }
+.b-desuscrito { background:#181828; color:#555;           border:1px solid #2a2a3a; } .b-desuscrito::before { background:#555; }
+.b-blue       { background:#0a1a2a; color:var(--blue);    border:1px solid #1a3050; } .b-blue::before     { background:var(--blue); }
+
+/* ══ TABLE ══ */
+.table-wrap { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; }
-th { text-align: left; padding: 10px 14px; font-size: 10px; color: #3a3a5a; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-td { padding: 11px 14px; border-bottom: 1px solid #0d0d1a; font-size: 13px; color: #b0aac8; }
+th { text-align: left; padding: 10px 14px; font-size: 10px; color: #3a3a5a; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; border-bottom: 1px solid var(--border); white-space: nowrap; }
+td { padding: 11px 14px; border-bottom: 1px solid #0d0d1c; font-size: 12px; color: #b0aac8; vertical-align: middle; }
 td.bold { color: #fff; font-weight: 600; }
 td.mono { font-family: var(--mono); font-size: 11px; }
-tr:hover td { background: #0f0f20; }
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
-.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 22px; overflow: hidden; position: relative; }
-.stat-card::after { content:''; position:absolute; inset:0; background: radial-gradient(circle at top right, var(--glow,transparent) 0%, transparent 70%); pointer-events:none; }
-.stat-card.g { --glow: #22c55e18; } .stat-card.y { --glow: #fbbf2418; }
-.stat-card.b { --glow: #38bdf818; } .stat-card.p { --glow: #6c4ef218; }
-.stat-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; }
-.stat-val { font-size: 36px; font-weight: 800; line-height: 1; }
-.stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: var(--mono); }
-.drop-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 36px 20px; text-align: center; cursor: pointer; transition: all .2s; }
-.drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: #120d2a; }
-.drop-icon { font-size: 40px; margin-bottom: 12px; }
+tr:hover td { background: #0f0f22; }
+
+/* ══ STATS GRID ══ */
+.stats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+.scard { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; }
+.scard::after { content:''; position:absolute; inset:0; background:radial-gradient(circle at top right, var(--glow,transparent) 0%, transparent 65%); pointer-events:none; }
+.scard.g{--glow:#22c55e15;} .scard.y{--glow:#fbbf2415;} .scard.b{--glow:#38bdf815;} .scard.p{--glow:#6c4ef215;}
+.scard-label { font-size: 10px; color: var(--muted); font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 10px; font-family: var(--mono); }
+.scard-val { font-size: 38px; font-weight: 800; line-height: 1; }
+.scard-sub { font-size: 11px; color: var(--muted); margin-top: 6px; font-family: var(--mono); }
+
+/* ══ DROP ZONE ══ */
+.drop-zone { border: 2px dashed #2a2a4a; border-radius: 12px; padding: 32px 20px; text-align: center; cursor: pointer; transition: all .2s; }
+.drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(108,78,242,.05); }
+.drop-zone .dz-icon { font-size: 38px; margin-bottom: 10px; }
 .drop-zone p { font-size: 13px; color: #666; line-height: 1.6; }
 .drop-zone strong { color: var(--accent2); }
-.filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
-.filter-bar input, .filter-bar select { max-width: 200px; font-size: 12px; padding: 8px 12px; }
-.fchip { padding: 7px 14px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .15s; font-family: var(--sans); white-space: nowrap; }
-.fchip:hover { border-color: var(--accent); color: var(--text); }
-.fchip.on     { background: var(--accent);  border-color: var(--accent);  color: #fff; }
-.fchip.on-g   { background: #0d2918; border-color: #1a4731; color: var(--green); }
-.fchip.on-y   { background: #2a1e00; border-color: #4a3800; color: var(--yellow); }
-.count-pill { margin-left: auto; font-size: 11px; color: var(--muted); font-family: var(--mono); background: #0a0a18; border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; white-space: nowrap; }
-.target-box { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 16px; }
-.topt { display: flex; align-items: flex-start; gap: 12px; padding: 11px 12px; border-radius: 8px; cursor: pointer; border: 1px solid transparent; transition: all .15s; margin-bottom: 6px; }
-.topt:last-child { margin-bottom: 0; }
-.topt:hover { background: #12122a; }
-.topt.sel { background: #12122a; border-color: var(--accent); }
-.topt input[type=radio] { margin-top: 2px; accent-color: var(--accent); width: auto; flex-shrink: 0; }
-.topt-label { font-size: 13px; font-weight: 700; color: var(--text); }
-.topt-desc  { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
-.dtab-bar { display: flex; border-bottom: 1px solid var(--border); }
-.dtab { padding: 10px 18px; font-size: 12px; font-weight: 700; cursor: pointer; color: var(--muted); border-bottom: 2px solid transparent; transition: all .15s; }
-.dtab.active { color: var(--accent2); border-bottom-color: var(--accent); }
-.dpanel { display: none; padding-top: 16px; }
-.dpanel.active { display: block; }
-.tpl-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
-.tpl-card { border: 2px solid var(--border); border-radius: 10px; overflow: hidden; cursor: pointer; transition: all .15s; }
-.tpl-card:hover { border-color: #5a3ce0; transform: translateY(-1px); }
-.tpl-card.sel { border-color: var(--accent); box-shadow: 0 0 0 2px #6c4ef233; }
-.tpl-thumb { height: 72px; display: flex; align-items: center; justify-content: center; font-size: 24px; background: var(--surface2); }
-.tpl-name { padding: 7px 10px; font-size: 11px; font-weight: 700; background: #0a0a18; border-top: 1px solid var(--border); text-align: center; }
-.var-tag { display: inline-block; background: #1a1030; border: 1px solid #3d2a7a; color: var(--accent2); border-radius: 6px; padding: 3px 10px; font-size: 11px; font-family: var(--mono); cursor: pointer; margin: 0 4px 6px 0; transition: background .1s; user-select: none; }
-.var-tag:hover { background: #2a1050; }
-.prog-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 12px; font-family: var(--mono); border-bottom: 1px solid #0d0d1a; }
-.prog-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
-.spinner { width: 13px; height: 13px; border: 2px solid #222; border-top-color: var(--accent2); border-radius: 50%; animation: spin .6s linear infinite; display: inline-block; }
-@keyframes spin { to { transform: rotate(360deg); } }
-.preview-box { background: #06060d; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.prev-head { background: #0f0f1e; padding: 12px 16px; border-bottom: 1px solid var(--border); }
-.prev-to { font-size: 11px; color: var(--muted); font-family: var(--mono); }
-.prev-subject { font-size: 14px; font-weight: 700; color: #fff; margin-top: 4px; }
-#prev-iframe { width: 100%; min-height: 320px; border: none; background: #fff; display: block; border-radius: 0 0 10px 10px; }
-#prev-pre { padding: 18px; font-family: var(--mono); font-size: 12px; color: #aaa; white-space: pre-wrap; line-height: 1.8; min-height: 200px; display: none; }
-.callout { background: #130d30; border: 1px solid #3d2a7a; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; font-size: 13px; line-height: 1.75; }
-.callout strong { color: var(--accent2); }
-.callout a { color: var(--accent2); }
-.callout code { font-family: var(--mono); font-size: 12px; background: #0a0820; padding: 1px 6px; border-radius: 4px; color: #c4b5fd; }
-#toast { position: fixed; bottom: 24px; right: 24px; padding: 14px 22px; border-radius: 10px; font-weight: 700; font-size: 13px; z-index: 9999; display: none; max-width: 360px; }
-#toast.success { background: #0a2518; border: 1px solid #1a4731; color: var(--green); }
-#toast.error   { background: #280d0d; border: 1px solid #4a1a1a; color: var(--red); }
-#toast.info    { background: #130d30; border: 1px solid #3d2a7a; color: var(--accent2); }
-.row { display: flex; gap: 16px; align-items: flex-start; }
-.col { flex: 1; }
-.col-2 { flex: 2; }
-input[type="checkbox"] { width: auto; cursor: pointer; accent-color: var(--accent); }
-.alert-banner { background: #1e1500; border: 1px solid #4a3800; border-radius: 10px; padding: 14px 20px; margin-bottom: 18px; font-size: 13px; display: flex; align-items: flex-start; gap: 12px; }
-.alert-banner strong { color: var(--yellow); }
-pre.code-b { background: #03030a; border: 1px solid var(--border); border-radius: 8px; padding: 16px; font-family: var(--mono); font-size: 12px; color: #7dd3fc; overflow-x: auto; line-height: 1.7; }
-@media (max-width: 900px) {
-  aside { width: 60px; }
-  aside .logo p, aside nav a span, aside .sidebar-stats { display: none; }
-  nav a { padding: 14px; justify-content: center; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .row { flex-direction: column; }
-  .tpl-grid { grid-template-columns: repeat(2, 1fr); }
+
+/* ══ FILTER BAR ══ */
+.filter-bar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; align-items: center; }
+.filter-bar input, .filter-bar select { font-size: 12px; padding: 8px 12px; max-width: 200px; }
+.fchip { padding: 7px 13px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted2); font-size: 11px; font-weight: 700; cursor: pointer; transition: all .15s; font-family: var(--sans); white-space: nowrap; }
+.fchip:hover { border-color: #4a4a6a; color: var(--text); }
+.fchip.on   { background:var(--accent);  border-color:var(--accent);  color:#fff; }
+.fchip.on-g { background:#0d2918; border-color:#1a4731; color:var(--green); }
+.fchip.on-y { background:#211800; border-color:#4a3800; color:var(--yellow); }
+.count-pill { margin-left:auto; font-size:11px; color:var(--muted); font-family:var(--mono); background:#0a0a18; border:1px solid var(--border); border-radius:20px; padding:4px 12px; white-space:nowrap; }
+
+/* ══ TARGET SELECTOR ══ */
+.target-box { background:var(--bg); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:14px; }
+.topt { display:flex; align-items:flex-start; gap:12px; padding:11px 13px; border-radius:9px; cursor:pointer; border:1px solid transparent; transition:all .15s; margin-bottom:6px; }
+.topt:last-child { margin-bottom:0; }
+.topt:hover { background:#12122a; }
+.topt.sel { background:#12122a; border-color:rgba(108,78,242,.5); box-shadow:0 0 0 1px rgba(108,78,242,.2); }
+.topt input[type=radio] { margin-top:3px; accent-color:var(--accent); width:auto; flex-shrink:0; }
+.topt-label { font-size:13px; font-weight:700; color:var(--text); }
+.topt-desc  { font-size:11px; color:var(--muted); margin-top:2px; font-family:var(--mono); }
+.topt-count { margin-left:auto; font-size:12px; font-weight:800; color:var(--accent2); font-family:var(--mono); flex-shrink:0; padding-top:2px; }
+
+/* ══ DESIGN TABS ══ */
+.dtab-bar { display:flex; border-bottom:1px solid var(--border); }
+.dtab { padding:10px 18px; font-size:12px; font-weight:700; cursor:pointer; color:var(--muted); border-bottom:2px solid transparent; transition:all .15s; }
+.dtab.active { color:var(--accent2); border-bottom-color:var(--accent); }
+.dpanel { display:none; padding-top:14px; }
+.dpanel.active { display:block; }
+
+/* ══ TEMPLATE GRID ══ */
+.tpl-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+.tpl-card { border:2px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; transition:all .15s; }
+.tpl-card:hover { border-color:#5a3ce0; transform:translateY(-2px); box-shadow:0 4px 16px rgba(108,78,242,.2); }
+.tpl-card.sel { border-color:var(--accent); box-shadow:0 0 0 2px rgba(108,78,242,.25); }
+.tpl-thumb { height:68px; display:flex; align-items:center; justify-content:center; font-size:26px; background:var(--surface2); }
+.tpl-name { padding:6px 10px; font-size:11px; font-weight:700; background:#0a0a18; border-top:1px solid var(--border); text-align:center; }
+
+/* ══ VAR TAGS ══ */
+.var-tags { display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; }
+.vt { display:inline-block; background:#160e30; border:1px solid #3d2a7a; color:var(--accent2); border-radius:6px; padding:3px 9px; font-size:11px; font-family:var(--mono); cursor:pointer; transition:background .1s; user-select:none; }
+.vt:hover { background:#220f46; }
+
+/* ══ PROGRESS ══ */
+.prog-item { display:flex; align-items:center; gap:10px; padding:8px 0; font-size:12px; font-family:var(--mono); border-bottom:1px solid #0d0d1c; }
+.prog-icon { font-size:14px; width:20px; text-align:center; flex-shrink:0; }
+.spinner { width:13px; height:13px; border:2px solid #222; border-top-color:var(--accent2); border-radius:50%; animation:spin .6s linear infinite; display:inline-block; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ══ PREVIEW ══ */
+.preview-box { background:#05050d; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+.prev-head { background:#0f0f1e; padding:12px 16px; border-bottom:1px solid var(--border); }
+.prev-to { font-size:11px; color:var(--muted); font-family:var(--mono); }
+.prev-subject { font-size:14px; font-weight:700; color:#fff; margin-top:4px; }
+#prev-iframe { width:100%; min-height:350px; border:none; background:#fff; display:block; border-radius:0 0 10px 10px; }
+#prev-pre { padding:18px; font-family:var(--mono); font-size:12px; color:#aaa; white-space:pre-wrap; line-height:1.8; min-height:200px; display:none; }
+
+/* ══ CALLOUT / CODE ══ */
+.callout { background:#120d30; border:1px solid #3d2a7a; border-radius:10px; padding:16px 20px; margin-bottom:18px; font-size:13px; line-height:1.8; }
+.callout strong { color:var(--accent2); }
+.callout a { color:var(--accent2); }
+.callout code { font-family:var(--mono); font-size:12px; background:#0a0820; padding:1px 6px; border-radius:4px; color:#c4b5fd; }
+pre.code-b { background:#03030a; border:1px solid var(--border); border-radius:8px; padding:16px; font-family:var(--mono); font-size:12px; color:#7dd3fc; overflow-x:auto; line-height:1.8; }
+
+/* ══ DISTRIBUTION BAR ══ */
+.dist-bar { background:var(--bg); border-radius:8px; overflow:hidden; height:12px; display:flex; margin-bottom:10px; }
+.dist-bar div { height:100%; transition:width .6s ease; }
+
+/* ══ TOAST ══ */
+#toast { position:fixed; bottom:24px; right:24px; padding:14px 20px; border-radius:12px; font-weight:700; font-size:13px; z-index:9999; display:none; max-width:380px; box-shadow:0 8px 30px rgba(0,0,0,.5); transition:all .3s; }
+#toast.success { background:#0a2518; border:1px solid #1a4731; color:var(--green); }
+#toast.error   { background:#280d0d; border:1px solid #4a1a1a; color:var(--red); }
+#toast.info    { background:#120d30; border:1px solid #3d2a7a; color:var(--accent2); }
+#toast.warn    { background:#211800; border:1px solid #4a3800; color:var(--yellow); }
+
+/* ══ MISC ══ */
+input[type="checkbox"] { width:auto; cursor:pointer; accent-color:var(--accent); }
+input[type="color"] { height:40px; cursor:pointer; padding:4px 6px; }
+.row2 { display:grid; grid-template-columns:1.6fr 1fr; gap:16px; align-items:start; }
+.sticky-preview { position:sticky; top:0; }
+.sep { height:1px; background:linear-gradient(90deg,transparent,var(--border),transparent); margin:8px 0 20px; }
+.tag-green { color:var(--green); font-family:var(--mono); font-size:11px; }
+.tag-yellow { color:var(--yellow); font-family:var(--mono); font-size:11px; }
+
+/* ══ FIX NOTICE ══ */
+.fix-banner { background:linear-gradient(135deg,#1e0a0a,#2a1010); border:1px solid #6a1a1a; border-radius:12px; padding:16px 20px; margin-bottom:20px; display:flex; gap:14px; align-items:flex-start; }
+.fix-banner .fb-icon { font-size:28px; flex-shrink:0; }
+.fix-banner h3 { color:var(--red); font-size:14px; margin-bottom:6px; }
+.fix-banner p { color:#c08080; font-size:13px; line-height:1.7; margin:0; }
+.fix-banner code { font-family:var(--mono); background:#3a1010; padding:2px 8px; border-radius:5px; color:#ffaaaa; font-size:12px; }
+.fix-steps { margin-top:10px; padding-left:4px; }
+.fix-steps li { color:#d08080; font-size:12px; line-height:1.8; list-style:none; padding-left:16px; position:relative; }
+.fix-steps li::before { content:'→'; position:absolute; left:0; color:#6a3030; }
+.fix-steps li strong { color:#ffaaaa; }
+
+@media (max-width:1000px) {
+  aside { width:64px; min-width:64px; }
+  aside .logo p, aside nav a span, aside .sidebar-bottom { display:none; }
+  nav a { padding:14px; justify-content:center; border-radius:12px; }
+  .stats-grid { grid-template-columns:repeat(2,1fr); }
+  .row2 { grid-template-columns:1fr; }
+  .tpl-grid { grid-template-columns:repeat(2,1fr); }
 }
 </style>
 </head>
 <body>
 
+<!-- ══════════════ SIDEBAR ══════════════ -->
 <aside>
   <div class="logo">
-    <h1>mail<em>bot</em></h1>
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <h1>mail<em>bot</em></h1>
+    </div>
     <p>EOS Community</p>
   </div>
+
   <nav>
-    <a class="active" onclick="goto('dashboard',this)"><span class="ni">📊</span><span>Dashboard</span></a>
-    <a onclick="goto('contactos',this)"><span class="ni">👥</span><span>Contactos</span></a>
-    <a onclick="goto('inactivos',this)"><span class="ni">⚠️</span><span>Inactivos</span></a>
-    <a onclick="goto('campana',this)"><span class="ni">✉️</span><span>Campaña</span></a>
-    <a onclick="goto('config',this)"><span class="ni">⚙️</span><span>Config</span></a>
+    <div class="nav-section">Principal</div>
+    <a class="active" onclick="goto('dashboard',this)">
+      <span class="ni">📊</span><span>Dashboard</span>
+    </a>
+    <a onclick="goto('contactos',this)">
+      <span class="ni">👥</span><span>Contactos</span>
+      <span class="nbadge" id="nb-total" style="display:none">0</span>
+    </a>
+    <a onclick="goto('inactivos',this)">
+      <span class="ni">⚠️</span><span>Inactivos</span>
+      <span class="nbadge" id="nb-inact" style="display:none">0</span>
+    </a>
+
+    <div class="nav-section">Envíos</div>
+    <a onclick="goto('campana',this)">
+      <span class="ni">✉️</span><span>Campaña</span>
+    </a>
+    <a onclick="goto('historial',this)">
+      <span class="ni">📋</span><span>Historial</span>
+    </a>
+
+    <div class="nav-section">Sistema</div>
+    <a onclick="goto('config',this)">
+      <span class="ni">⚙️</span><span>Configuración</span>
+    </a>
+    <a onclick="goto('ayuda',this)">
+      <span class="ni">❓</span><span>Ayuda</span>
+    </a>
   </nav>
-  <div class="sidebar-stats">
-    <div class="ss-card"><div class="ss-label">Activos</div><div class="ss-val" style="color:var(--green)" id="sb-activos">0</div></div>
-    <div class="ss-card"><div class="ss-label">Inactivos</div><div class="ss-val" style="color:var(--yellow)" id="sb-inactivos">0</div></div>
-    <div class="ss-card"><div class="ss-label">Total</div><div class="ss-val" style="color:var(--accent2)" id="sb-total">0</div></div>
-    <div class="ss-card"><div class="ss-label">Enviados</div><div class="ss-val" style="color:var(--blue)" id="sb-enviados">0</div></div>
+
+  <div class="sidebar-bottom">
+    <div class="mini-stats">
+      <div class="ms"><div class="ms-label">Activos</div><div class="ms-val" style="color:var(--green)" id="sb-act">0</div></div>
+      <div class="ms"><div class="ms-label">Inactivos</div><div class="ms-val" style="color:var(--yellow)" id="sb-ina">0</div></div>
+      <div class="ms"><div class="ms-label">Total</div><div class="ms-val" style="color:var(--accent2)" id="sb-tot">0</div></div>
+      <div class="ms"><div class="ms-label">Enviados</div><div class="ms-val" style="color:var(--blue)" id="sb-env">0</div></div>
+    </div>
+    <div class="ejs-status">
+      <div class="ejs-dot" id="ejs-dot"></div>
+      <span class="ejs-text" id="ejs-text">EmailJS no configurado</span>
+    </div>
   </div>
 </aside>
 
+<!-- ══════════════ MAIN ══════════════ -->
 <main>
-  <header>
+  <div class="topbar">
     <h2 id="page-title">Dashboard</h2>
-    <span style="font-size:11px;color:var(--muted);font-family:var(--mono)" id="date-display"></span>
-  </header>
+    <div class="topbar-right">
+      <span class="date-chip" id="date-display"></span>
+      <button class="btn btn-ghost btn-sm" onclick="goto('config', document.querySelector('nav a:nth-child(8)'))">⚙️ Config</button>
+    </div>
+  </div>
+
   <div class="content">
 
-    <!-- DASHBOARD -->
+    <!-- ══ DASHBOARD ══ -->
     <div class="tab active" id="tab-dashboard">
       <div class="stats-grid">
-        <div class="stat-card g"><div class="stat-label">Activos EOS</div><div class="stat-val" style="color:var(--green)" id="ds-activos">0</div><div class="stat-sub">usuarios activos</div></div>
-        <div class="stat-card y"><div class="stat-label">Inactivos</div><div class="stat-val" style="color:var(--yellow)" id="ds-inactivos">0</div><div class="stat-sub">a reactivar</div></div>
-        <div class="stat-card b"><div class="stat-label">Emails enviados</div><div class="stat-val" style="color:var(--blue)" id="ds-enviados">0</div><div class="stat-sub">todas las campañas</div></div>
-        <div class="stat-card p"><div class="stat-label">Campañas</div><div class="stat-val" style="color:var(--accent2)" id="ds-campanas">0</div><div class="stat-sub" id="ds-campanas-sub"></div></div>
+        <div class="scard g"><div class="scard-label">Activos EOS</div><div class="scard-val" style="color:var(--green)" id="ds-act">0</div><div class="scard-sub">usuarios activos</div></div>
+        <div class="scard y"><div class="scard-label">Inactivos</div><div class="scard-val" style="color:var(--yellow)" id="ds-ina">0</div><div class="scard-sub">a reactivar</div></div>
+        <div class="scard b"><div class="scard-label">Emails enviados</div><div class="scard-val" style="color:var(--blue)" id="ds-env">0</div><div class="scard-sub">todas las campañas</div></div>
+        <div class="scard p"><div class="scard-label">Campañas</div><div class="scard-val" style="color:var(--accent2)" id="ds-camp">0</div><div class="scard-sub" id="ds-camp-sub">historial</div></div>
       </div>
-      <div class="card" style="margin-bottom:18px">
-        <div class="card-title">📊 Distribución <small id="ds-pct"></small></div>
-        <div style="background:var(--bg);border-radius:8px;overflow:hidden;height:14px;display:flex;margin-bottom:10px">
-          <div id="bar-act" style="background:var(--green);height:100%;transition:width .5s"></div>
-          <div id="bar-ina" style="background:var(--yellow);height:100%;transition:width .5s"></div>
+
+      <div class="card">
+        <div class="card-title">📊 Distribución de usuarios <small id="ds-pct"></small></div>
+        <div class="dist-bar" style="margin-bottom:10px">
+          <div id="bar-act" style="background:var(--green)"></div>
+          <div id="bar-ina" style="background:var(--yellow)"></div>
         </div>
         <div style="display:flex;gap:20px;font-size:12px;font-family:var(--mono)">
-          <span><span style="color:var(--green)">■</span> Activos</span>
-          <span><span style="color:var(--yellow)">■</span> Inactivos</span>
+          <span><span style="color:var(--green)">■</span> Activos &nbsp;<strong class="tag-green" id="ds-act-n">0</strong></span>
+          <span><span style="color:var(--yellow)">■</span> Inactivos &nbsp;<strong class="tag-yellow" id="ds-ina-n">0</strong></span>
+          <span style="color:var(--muted)">■ Total <strong style="color:var(--accent2)" id="ds-tot-n">0</strong></span>
         </div>
       </div>
-      <div class="card"><div class="card-title">📬 Campañas recientes</div><div id="dash-camps"><p style="color:var(--muted);font-size:13px">Sin campañas.</p></div></div>
+
+      <div class="card">
+        <div class="card-title">📬 Últimas campañas</div>
+        <div id="dash-camps"><p style="color:var(--muted);font-size:13px">Sin campañas aún. Importa contactos y envía tu primera campaña.</p></div>
+      </div>
     </div>
 
-    <!-- CONTACTOS -->
+    <!-- ══ CONTACTOS ══ -->
     <div class="tab" id="tab-contactos">
+
+      <!-- FIX NOTICE si hay problema -->
+      <div id="fix-notice" style="display:none" class="fix-banner">
+        <div class="fb-icon">🚨</div>
+        <div>
+          <h3>¿El email llega vacío? Solución aquí</h3>
+          <p>El template de EmailJS necesita <code>{{{message}}}</code> (3 llaves) con Content type: HTML activado.</p>
+          <ul class="fix-steps">
+            <li>Ve a <strong>emailjs.com → Email Templates</strong> → edita tu template</li>
+            <li>En el campo Body escribe: <code>{{{message}}}</code></li>
+            <li>Activa la opción <strong>"Content type: HTML"</strong></li>
+            <li>Guarda y vuelve a intentar</li>
+          </ul>
+        </div>
+      </div>
+
       <div class="card">
-        <div class="card-title">📥 Importar XLSX · EOS Community</div>
+        <div class="card-title">📥 Importar desde Excel (XLSX) — EOS Community</div>
         <div class="drop-zone" id="drop-zone"
           onclick="document.getElementById('xlsxFile').click()"
           ondragover="dOver(event)" ondragleave="dLeave()" ondrop="dDrop(event)">
-          <div class="drop-icon">📊</div>
+          <div class="dz-icon">📊</div>
           <p><strong>Arrastra el Excel aquí</strong> o haz clic para seleccionar</p>
-          <p style="font-size:11px;margin-top:6px">Detecta: Correo · Nombre · Apellido · <strong>Estatus Activo/Inactivo</strong> · País · Ciudad</p>
+          <p style="font-size:11px;margin-top:6px;color:#555">Detecta: Correo · Nombre · Apellido · <strong>Estatus (Activo/Inactivo)</strong> · País · Ciudad · Patrocinador</p>
         </div>
         <input type="file" id="xlsxFile" accept=".xlsx,.xls,.csv" style="display:none" onchange="loadXLSX(event)">
         <div id="import-area" style="display:none">
@@ -226,190 +389,230 @@ pre.code-b { background: #03030a; border: 1px solid var(--border); border-radius
       </div>
 
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
-          <div class="card-title" style="margin-bottom:0">Todos los contactos <small id="ctitle"></small></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn btn-danger" style="font-size:11px;padding:7px 12px" onclick="clearAll()">🗑 Limpiar</button>
-            <button class="btn btn-primary" onclick="toggleAF()">+ Agregar</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin-bottom:0">Lista de contactos <small id="ctitle">— 0 total</small></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="exportCSV()">📤 Exportar CSV</button>
+            <button class="btn btn-danger btn-sm" onclick="clearAll()">🗑 Limpiar todo</button>
+            <button class="btn btn-primary btn-sm" onclick="toggleAF()">+ Agregar</button>
           </div>
         </div>
+
         <div class="filter-bar">
-          <input id="s-search" placeholder="🔍 Nombre o email…" oninput="renderContacts()" style="flex:1;min-width:160px">
+          <input id="s-search" placeholder="🔍 Buscar por nombre o email…" oninput="renderContacts()" style="flex:1;min-width:180px;max-width:300px">
           <button class="fchip on"  id="chip-todos"    onclick="setChip('todos')">Todos</button>
           <button class="fchip"     id="chip-activo"   onclick="setChip('activo')">🟢 Activos</button>
           <button class="fchip"     id="chip-inactivo" onclick="setChip('inactivo')">🟡 Inactivos</button>
           <select id="s-pais" onchange="renderContacts()" style="max-width:150px"><option value="">🌍 País</option></select>
+          <select id="s-mail" onchange="renderContacts()" style="max-width:160px">
+            <option value="">📧 Estado correo</option>
+            <option value="suscrito">Suscritos</option>
+            <option value="habilitado">Habilitados</option>
+            <option value="desuscrito">Desuscritos</option>
+          </select>
           <span class="count-pill" id="ccount">0</span>
         </div>
-        <div id="add-form" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px">
-          <div class="row">
-            <div class="col field"><label>Nombre</label><input id="f-nombre" placeholder="Ana García"></div>
-            <div class="col field"><label>Email</label><input id="f-email" type="email" placeholder="ana@correo.com"></div>
-            <div class="col field"><label>Patrocinador</label><input id="f-empresa" placeholder="EOS Community"></div>
+
+        <div id="add-form" style="display:none;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:14px">
+          <div class="field-row c3">
+            <div class="field"><label>Nombre completo</label><input id="f-nombre" placeholder="Ana García"></div>
+            <div class="field"><label>Email</label><input id="f-email" type="email" placeholder="ana@correo.com"></div>
+            <div class="field"><label>Patrocinador</label><input id="f-empresa" placeholder="EOS Community"></div>
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn btn-primary" onclick="addContact()">Guardar</button>
             <button class="btn btn-ghost" onclick="toggleAF()">Cancelar</button>
           </div>
         </div>
-        <table>
-          <thead><tr>
-            <th style="width:30px"><input type="checkbox" id="check-all" onchange="toggleAll(this)"></th>
-            <th>Nombre</th><th>Email</th><th>País</th>
-            <th>Estatus EOS</th><th>Estado correo</th><th>Acción</th>
-          </tr></thead>
-          <tbody id="ctbody"></tbody>
-        </table>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:30px"><input type="checkbox" id="check-all" onchange="toggleAll(this)"></th>
+              <th>Nombre</th><th>Email</th><th>País</th>
+              <th>Estatus EOS</th><th>Estado correo</th><th>Acción</th>
+            </tr></thead>
+            <tbody id="ctbody"></tbody>
+          </table>
+        </div>
         <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-          <button class="btn btn-ghost" style="font-size:11px" onclick="bulkMail('suscrito')">✅ Suscribir selec.</button>
-          <button class="btn btn-ghost" style="font-size:11px" onclick="bulkMail('desuscrito')">🚫 Desuscribir selec.</button>
-          <button class="btn btn-danger" style="font-size:11px" onclick="bulkDelete()">🗑 Eliminar selec.</button>
+          <button class="btn btn-ghost btn-sm" onclick="bulkMail('suscrito')">✅ Suscribir sel.</button>
+          <button class="btn btn-ghost btn-sm" onclick="bulkMail('habilitado')">🟣 Habilitar sel.</button>
+          <button class="btn btn-ghost btn-sm" onclick="bulkMail('desuscrito')">🚫 Desuscribir sel.</button>
+          <button class="btn btn-danger btn-sm" onclick="bulkDelete()">🗑 Eliminar sel.</button>
         </div>
       </div>
     </div>
 
-    <!-- INACTIVOS -->
+    <!-- ══ INACTIVOS ══ -->
     <div class="tab" id="tab-inactivos">
-      <div class="alert-banner">
-        <span style="font-size:22px;flex-shrink:0">⚠️</span>
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
         <div>
           <strong>Usuarios Inactivos en EOS Community</strong><br>
-          <span style="color:#a09060;font-size:12px">Estatus <strong>Inactivo</strong> en el sistema. Habilita su correo para incluirlos en campañas de reactivación. Cuando respondan o se reactiven, márcalos como Suscrito.</span>
+          <span style="color:#a09060;font-size:12px">Usuarios con estatus <strong>Inactivo</strong> en el sistema. Habilita su correo individualmente o en masa para incluirlos en campañas de reactivación. Cuando respondan, márcalos como Suscrito.</span>
         </div>
       </div>
+
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-          <div class="card-title" style="margin-bottom:0">Listado de Inactivos <small id="ititle"></small></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin-bottom:0">Inactivos <small id="ititle">— 0</small></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-yellow" onclick="habilitarTodosInactivos()">☑ Habilitar todos</button>
-            <button class="btn btn-primary" onclick="goSendInactive()">✉️ Campaña a inactivos</button>
+            <button class="btn btn-ghost btn-sm" onclick="deshabilitarTodos()">🚫 Deshabilitar todos</button>
+            <button class="btn btn-yellow btn-sm" onclick="habilitarTodos()">☑ Habilitar todos</button>
+            <button class="btn btn-primary btn-sm" onclick="goSendInactive()">✉️ Campaña a inactivos</button>
           </div>
         </div>
         <div class="filter-bar">
-          <input id="si-search" placeholder="🔍 Buscar…" oninput="renderInactivos()" style="flex:1;min-width:160px">
+          <input id="si-search" placeholder="🔍 Buscar inactivo…" oninput="renderInactivos()" style="flex:1;min-width:180px;max-width:300px">
           <select id="si-pais" onchange="renderInactivos()" style="max-width:150px"><option value="">🌍 País</option></select>
           <span class="count-pill" id="icount">0</span>
         </div>
-        <table>
-          <thead><tr>
-            <th style="width:30px"><input type="checkbox" id="iall" onchange="toggleIAll(this)"></th>
-            <th>Nombre</th><th>Email</th><th>País</th><th>Ciudad</th>
-            <th>Correo habilitado</th><th>Marcar como</th>
-          </tr></thead>
-          <tbody id="itbody"></tbody>
-        </table>
-        <p style="margin-top:12px;font-size:12px;color:var(--muted);font-family:var(--mono)">
-          💡 Activa el correo para que el inactivo reciba la próxima campaña. Cuando responda o se reactive, usa "Suscribir" para actualizar su estatus.
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th style="width:30px"><input type="checkbox" id="iall" onchange="toggleIAll(this)"></th>
+              <th>Nombre</th><th>Email</th><th>País</th><th>Ciudad</th>
+              <th>Correo habilitado</th><th>Acción</th>
+            </tr></thead>
+            <tbody id="itbody"></tbody>
+          </table>
+        </div>
+        <p style="margin-top:12px;font-size:11px;color:var(--muted);font-family:var(--mono)">
+          💡 Los inactivos habilitados reciben la próxima campaña. Al enviar, su estado pasa a "suscrito" automáticamente.
         </p>
       </div>
     </div>
 
-    <!-- CAMPAÑA -->
+    <!-- ══ CAMPAÑA ══ -->
     <div class="tab" id="tab-campana">
-      <div class="row">
-        <div class="col-2">
+      <div class="row2">
+        <div>
           <div class="card">
             <div class="card-title">✉️ Componer campaña</div>
+
             <div class="field">
               <label>Enviar a</label>
               <div class="target-box">
                 <div class="topt sel" id="topt-suscritos" onclick="selTarget('suscritos')">
                   <input type="radio" name="tgt" value="suscritos" checked>
-                  <div><div class="topt-label">🟢 Solo suscritos al correo</div><div class="topt-desc" id="tdesc-suscritos">—</div></div>
+                  <div><div class="topt-label">🟢 Solo suscritos al correo</div><div class="topt-desc" id="tdesc-sus">—</div></div>
+                  <div class="topt-count" id="tcount-sus">0</div>
                 </div>
                 <div class="topt" id="topt-activos" onclick="selTarget('activos')">
                   <input type="radio" name="tgt" value="activos">
-                  <div><div class="topt-label">✅ Activos en EOS (con correo activo)</div><div class="topt-desc" id="tdesc-activos">—</div></div>
+                  <div><div class="topt-label">✅ Activos EOS (estatus Activo)</div><div class="topt-desc" id="tdesc-act">—</div></div>
+                  <div class="topt-count" id="tcount-act">0</div>
                 </div>
                 <div class="topt" id="topt-inactivos" onclick="selTarget('inactivos')">
                   <input type="radio" name="tgt" value="inactivos">
-                  <div><div class="topt-label">⚠️ Inactivos con correo habilitado</div><div class="topt-desc" id="tdesc-inactivos">—</div></div>
+                  <div><div class="topt-label">⚠️ Inactivos con correo habilitado</div><div class="topt-desc" id="tdesc-ina">—</div></div>
+                  <div class="topt-count" id="tcount-ina">0</div>
                 </div>
                 <div class="topt" id="topt-todos" onclick="selTarget('todos')">
                   <input type="radio" name="tgt" value="todos">
-                  <div><div class="topt-label">📋 Todos (activos + inactivos habilitados)</div><div class="topt-desc" id="tdesc-todos">—</div></div>
+                  <div><div class="topt-label">📋 Todos (activos + inactivos habilitados)</div><div class="topt-desc" id="tdesc-tod">—</div></div>
+                  <div class="topt-count" id="tcount-tod">0</div>
                 </div>
               </div>
             </div>
-            <div class="field"><label>Nombre de la campaña</label><input id="camp-nombre" placeholder="Reactivación Marzo 2026"></div>
-            <div class="field">
-              <label>Asunto</label>
-              <input id="camp-asunto" value="Hola {{nombre}}, te esperamos de vuelta 🚀" oninput="updatePreview()">
-              <div style="margin-top:8px">
-                <span class="var-tag" onclick="insertVar('camp-asunto','nombre')">{{nombre}}</span>
-                <span class="var-tag" onclick="insertVar('camp-asunto','ciudad')">{{ciudad}}</span>
+
+            <div class="field-row c2">
+              <div class="field" style="margin:0"><label>Nombre de la campaña</label><input id="camp-nombre" placeholder="Reactivación Marzo 2026"></div>
+              <div class="field" style="margin:0">
+                <label>Asunto</label>
+                <input id="camp-asunto" value="Hola {{nombre}}, te esperamos de vuelta 🚀" oninput="updatePreview()">
               </div>
             </div>
+            <div class="var-tags" style="margin-bottom:14px">
+              <span class="vt" onclick="insertVar('camp-asunto','nombre')">{{nombre}}</span>
+              <span class="vt" onclick="insertVar('camp-asunto','ciudad')">{{ciudad}}</span>
+              <span class="vt" onclick="insertVar('camp-asunto','empresa')">{{empresa}}</span>
+            </div>
+
             <div class="field">
               <label>Diseño del email</label>
               <div style="background:var(--bg);border:1px solid var(--border);border-radius:10px;overflow:hidden">
                 <div class="dtab-bar">
                   <div class="dtab active" onclick="swDtab('visual',this)">🎨 Visual</div>
-                  <div class="dtab" onclick="swDtab('html',this)">&lt;/&gt; HTML</div>
-                  <div class="dtab" onclick="swDtab('texto',this)">📝 Texto</div>
+                  <div class="dtab" onclick="swDtab('html',this)">&lt;/&gt; HTML directo</div>
+                  <div class="dtab" onclick="swDtab('texto',this)">📝 Texto plano</div>
                 </div>
-                <div class="dpanel active" id="dp-visual" style="padding:16px">
+
+                <!-- VISUAL -->
+                <div class="dpanel active" id="dp-visual" style="padding:14px">
                   <div class="tpl-grid" id="tpl-grid"></div>
                   <div id="ve-fields" style="display:none">
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-                      <div class="field" style="margin:0"><label>Color principal</label><input type="color" id="ve-color" value="#6c4ef2" oninput="rebuildTpl()" style="height:40px;cursor:pointer"></div>
+                    <div class="field-row c2" style="margin-bottom:10px">
+                      <div class="field" style="margin:0"><label>Color principal</label><input type="color" id="ve-color" value="#6c4ef2" oninput="rebuildTpl()"></div>
                       <div class="field" style="margin:0"><label>Logo / Nombre</label><input id="ve-logo" placeholder="EOS Community" oninput="rebuildTpl()"></div>
                     </div>
-                    <div class="field"><label>Título</label><input id="ve-title" placeholder="¡Hola {{nombre}}, te extrañamos!" oninput="rebuildTpl()"></div>
-                    <div class="field"><label>Cuerpo</label><textarea id="ve-body" rows="5" oninput="rebuildTpl()" placeholder="Escribe tu mensaje aquí…&#10;&#10;Usa {{nombre}}, {{ciudad}}, {{empresa}}"></textarea></div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                      <div class="field" style="margin:0"><label>Texto botón</label><input id="ve-btn" placeholder="Volver a EOS →" oninput="rebuildTpl()"></div>
-                      <div class="field" style="margin:0"><label>URL botón</label><input id="ve-url" placeholder="https://eoscommunity.online" oninput="rebuildTpl()"></div>
+                    <div class="field"><label>Título del email</label><input id="ve-title" placeholder="¡{{nombre}}, te extrañamos!" oninput="rebuildTpl()"></div>
+                    <div class="field"><label>Cuerpo del mensaje</label><textarea id="ve-body" rows="5" oninput="rebuildTpl()" placeholder="Escribe el mensaje aquí…&#10;&#10;Usa {{nombre}}, {{ciudad}}, {{empresa}}"></textarea></div>
+                    <div class="field-row c2">
+                      <div class="field" style="margin:0"><label>Texto del botón</label><input id="ve-btn" placeholder="Volver a EOS →" oninput="rebuildTpl()"></div>
+                      <div class="field" style="margin:0"><label>URL del botón</label><input id="ve-url" placeholder="https://eoscommunity.online" oninput="rebuildTpl()"></div>
                     </div>
-                    <div style="margin-top:10px">
-                      <span class="var-tag" onclick="vInsert('{{nombre}}')">{{nombre}}</span>
-                      <span class="var-tag" onclick="vInsert('{{empresa}}')">{{empresa}}</span>
-                      <span class="var-tag" onclick="vInsert('{{ciudad}}')">{{ciudad}}</span>
-                      <span class="var-tag" onclick="vInsert('{{email}}')">{{email}}</span>
+                    <div class="var-tags" style="margin-top:10px">
+                      <span class="vt" onclick="vInsert('{{nombre}}')">{{nombre}}</span>
+                      <span class="vt" onclick="vInsert('{{empresa}}')">{{empresa}}</span>
+                      <span class="vt" onclick="vInsert('{{ciudad}}')">{{ciudad}}</span>
+                      <span class="vt" onclick="vInsert('{{email}}')">{{email}}</span>
                     </div>
                   </div>
                 </div>
-                <div class="dpanel" id="dp-html" style="padding:16px">
-                  <p style="font-size:12px;color:#555;margin-bottom:8px">Pega HTML con estilos inline.</p>
-                  <textarea id="camp-html" rows="14" oninput="updatePreview()" placeholder="<h1>Hola {{nombre}}</h1>"></textarea>
-                  <div style="margin-top:8px">
-                    <span class="var-tag" onclick="insertVar('camp-html','nombre')">{{nombre}}</span>
-                    <span class="var-tag" onclick="insertVar('camp-html','empresa')">{{empresa}}</span>
-                    <span class="var-tag" onclick="insertVar('camp-html','ciudad')">{{ciudad}}</span>
-                    <span class="var-tag" onclick="insertVar('camp-html','email')">{{email}}</span>
+
+                <!-- HTML -->
+                <div class="dpanel" id="dp-html" style="padding:14px">
+                  <p style="font-size:12px;color:#555;margin-bottom:8px">Pega HTML con estilos inline. Se envía tal cual con las variables reemplazadas.</p>
+                  <textarea id="camp-html" rows="14" oninput="updatePreview()" placeholder="<h1>Hola {{nombre}}</h1>&#10;<p>Tu mensaje...</p>"></textarea>
+                  <div class="var-tags" style="margin-top:8px">
+                    <span class="vt" onclick="insertVar('camp-html','nombre')">{{nombre}}</span>
+                    <span class="vt" onclick="insertVar('camp-html','empresa')">{{empresa}}</span>
+                    <span class="vt" onclick="insertVar('camp-html','ciudad')">{{ciudad}}</span>
+                    <span class="vt" onclick="insertVar('camp-html','email')">{{email}}</span>
                   </div>
                 </div>
-                <div class="dpanel" id="dp-texto" style="padding:16px">
+
+                <!-- TEXTO -->
+                <div class="dpanel" id="dp-texto" style="padding:14px">
                   <textarea id="camp-body" rows="10" oninput="updatePreview()">Hola {{nombre}},
 
-Notamos que llevas un tiempo sin actividad en EOS Community y nos gustaría que volvieras.
+Notamos que llevas un tiempo sin actividad en EOS Community y queremos que vuelvas.
 
-Tenemos novedades que creemos te van a interesar mucho.
+Tenemos novedades importantes para ti.
 
 Visítanos: https://eoscommunity.online
 
 Un abrazo,
 El equipo EOS Community</textarea>
-                  <div style="margin-top:8px">
-                    <span class="var-tag" onclick="insertVar('camp-body','nombre')">{{nombre}}</span>
-                    <span class="var-tag" onclick="insertVar('camp-body','ciudad')">{{ciudad}}</span>
-                    <span class="var-tag" onclick="insertVar('camp-body','email')">{{email}}</span>
+                  <div class="var-tags" style="margin-top:8px">
+                    <span class="vt" onclick="insertVar('camp-body','nombre')">{{nombre}}</span>
+                    <span class="vt" onclick="insertVar('camp-body','ciudad')">{{ciudad}}</span>
+                    <span class="vt" onclick="insertVar('camp-body','email')">{{email}}</span>
                   </div>
                 </div>
               </div>
             </div>
-            <div id="send-status" style="display:none;margin-bottom:16px"></div>
+
+            <div id="send-status" style="display:none;margin-bottom:14px"></div>
+
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
               <button class="btn btn-outline" onclick="togglePreview()">👁 Preview</button>
-              <button class="btn btn-primary" id="btn-send" onclick="sendCampaign()">🚀 Enviar campaña</button>
+              <button class="btn btn-primary btn-lg" id="btn-send" onclick="sendCampaign()">🚀 Enviar campaña</button>
               <span id="send-count" style="font-size:11px;color:var(--muted);font-family:var(--mono)"></span>
             </div>
           </div>
         </div>
-        <div class="col" id="preview-panel" style="display:none">
-          <div class="card" style="position:sticky;top:0">
-            <div class="card-title">👁 Preview</div>
-            <div class="field"><label>Para</label><select id="preview-select" onchange="updatePreview()"></select></div>
+
+        <!-- PREVIEW -->
+        <div id="preview-panel" style="display:none">
+          <div class="card sticky-preview">
+            <div class="card-title">👁 Vista previa</div>
+            <div class="field">
+              <label>Previsualizar para</label>
+              <select id="preview-select" onchange="updatePreview()"></select>
+            </div>
             <div class="preview-box">
               <div class="prev-head">
                 <div class="prev-to" id="prev-to">Para: —</div>
@@ -423,80 +626,158 @@ El equipo EOS Community</textarea>
       </div>
     </div>
 
-    <!-- CONFIG -->
-    <div class="tab" id="tab-config">
-      <div class="callout">
-        <strong>🔑 Cómo configurar EmailJS (gratis · 200 emails/mes)</strong><br>
-        1. Crea cuenta en <a href="https://emailjs.com" target="_blank">emailjs.com</a><br>
-        2. <strong>Email Services</strong> → conecta Gmail → copia <strong>Service ID</strong><br>
-        3. <strong>Email Templates</strong> → crea template con: <code>{{to_email}}</code> <code>{{to_name}}</code> <code>{{subject}}</code> <code>{{message}}</code><br>
-        4. Activa <strong>"Content type: HTML"</strong> en el template para diseños HTML<br>
-        5. <strong>Account → API Keys</strong> → copia <strong>Public Key</strong>
-      </div>
+    <!-- ══ HISTORIAL ══ -->
+    <div class="tab" id="tab-historial">
       <div class="card">
-        <div class="card-title">⚙️ Credenciales EmailJS</div>
-        <div class="row">
-          <div class="col field"><label>Public Key</label><input id="cfg-pubkey" placeholder="tu_public_key" oninput="saveConfig()"></div>
-          <div class="col field"><label>Service ID</label><input id="cfg-service" placeholder="service_v3m9ok2" oninput="saveConfig()"></div>
-          <div class="col field"><label>Template ID</label><input id="cfg-template" placeholder="template_xxxxxxx" oninput="saveConfig()"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div class="card-title" style="margin-bottom:0">📋 Historial de campañas</div>
+          <button class="btn btn-danger btn-sm" onclick="clearCampaigns()">🗑 Limpiar historial</button>
         </div>
-        <div class="field"><label>Nombre remitente</label><input id="cfg-fromname" placeholder="EOS Community" oninput="saveConfig()"></div>
-        <div style="display:flex;gap:12px;align-items:center">
-          <button class="btn btn-primary" onclick="testConfig()">🧪 Email de prueba</button>
-          <span id="test-res" style="font-size:12px"></span>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📋 Template EmailJS</div>
-        <pre class="code-b">Para: {{to_email}}
-Asunto: {{subject}}
-
-{{message}}
-
----
-Enviado a {{to_name}} — EOS Community MailBot</pre>
-        <p style="font-size:12px;color:#555;margin-top:12px">💡 Activa <strong style="color:var(--accent2)">Content type: HTML</strong> en EmailJS para emails con diseño visual.</p>
+        <div id="hist-content"><p style="color:var(--muted);font-size:13px">Sin campañas en el historial.</p></div>
       </div>
     </div>
 
-  </div>
+    <!-- ══ CONFIGURACIÓN ══ -->
+    <div class="tab" id="tab-config">
+
+      <!-- BANNER FIX EMAIL VACÍO -->
+      <div class="fix-banner">
+        <div class="fb-icon">🔧</div>
+        <div>
+          <h3>Solución: Email llega vacío en Gmail</h3>
+          <p>Este es el problema más común con EmailJS. El template debe usar <code>{{{message}}}</code> con <strong>3 llaves</strong> (no 2) y tener <strong>Content type: HTML</strong> activado.</p>
+          <ul class="fix-steps" style="margin-top:8px">
+            <li>Ve a <strong>emailjs.com → Email Templates → edita tu template</strong></li>
+            <li>En el campo <strong>Body / Content</strong> escribe: <code>{{{message}}}</code></li>
+            <li>En opciones del template activa <strong>"Content type: HTML"</strong></li>
+            <li>Haz clic en <strong>Save</strong> y vuelve a enviar</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="callout">
+        <strong>🔑 Cómo obtener las credenciales (gratis · 200 emails/mes)</strong><br>
+        1. Crea cuenta en <a href="https://emailjs.com" target="_blank">emailjs.com</a><br>
+        2. <strong>Email Services</strong> → conecta tu Gmail → copia el <strong>Service ID</strong><br>
+        3. <strong>Email Templates</strong> → crea template → copia <strong>Template ID</strong><br>
+        4. <strong>Account → API Keys</strong> → copia tu <strong>Public Key</strong>
+      </div>
+
+      <div class="card">
+        <div class="card-title">⚙️ Credenciales EmailJS</div>
+        <div class="field-row c3">
+          <div class="field"><label>Public Key</label><input id="cfg-pubkey" placeholder="tu_public_key" oninput="saveConfig()"></div>
+          <div class="field"><label>Service ID</label><input id="cfg-service" placeholder="service_v3m9ok2" oninput="saveConfig()"></div>
+          <div class="field"><label>Template ID</label><input id="cfg-template" placeholder="template_xxxxxxx" oninput="saveConfig()"></div>
+        </div>
+        <div class="field"><label>Nombre del remitente</label><input id="cfg-fromname" placeholder="EOS Community" oninput="saveConfig()"></div>
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="testConfig()">🧪 Enviar email de prueba a mí mismo</button>
+          <input id="cfg-testemail" placeholder="tu@email.com para la prueba" style="max-width:260px">
+          <span id="test-res" style="font-size:12px"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Template correcto para EmailJS</div>
+        <p style="font-size:12px;color:#777;margin-bottom:12px">Crea un template en emailjs.com con <strong style="color:var(--red)">exactamente este contenido</strong>:</p>
+        <pre class="code-b">To:       {{to_email}}
+Subject:  {{subject}}
+Body:     {{{message}}}
+
+⚠️ IMPORTANTE: Usa {{{message}}} con 3 llaves para HTML
+⚠️ Activa "Content type: HTML" en las opciones del template</pre>
+        <div class="alert alert-ok" style="margin-top:14px">
+          <span class="alert-icon">✅</span>
+          <div><strong>¿Por qué 3 llaves?</strong><br><span style="font-size:12px;color:#7aaa8a">Con 2 llaves <code style="font-family:var(--mono)">{{message}}</code> EmailJS escapa el HTML y lo envía como texto plano (lo que ves en pantalla). Con 3 llaves <code style="font-family:var(--mono)">{{{message}}}</code> lo envía como HTML real con el diseño correcto.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ AYUDA ══ -->
+    <div class="tab" id="tab-ayuda">
+      <div class="card">
+        <div class="card-title">❓ Guía de uso rápido</div>
+        <div style="font-size:13px;line-height:1.9;color:#b0a8c8">
+          <p style="margin-bottom:16px"><strong style="color:#fff">1. Importar contactos</strong><br>Ve a <strong>Contactos</strong> y arrastra el Excel exportado de EOS Community. El bot detecta automáticamente los campos.</p>
+          <div class="sep"></div>
+          <p style="margin-bottom:16px"><strong style="color:#fff">2. Gestionar inactivos</strong><br>Ve a <strong>Inactivos</strong> para ver todos los usuarios con estatus Inactivo. Habilita los que quieres incluir en campañas. Cuando respondan, márcalos como "Suscrito".</p>
+          <div class="sep"></div>
+          <p style="margin-bottom:16px"><strong style="color:#fff">3. Crear una campaña</strong><br>Ve a <strong>Campaña</strong>, selecciona a quién enviar, elige una plantilla visual o pega HTML propio, personaliza el contenido y envía.</p>
+          <div class="sep"></div>
+          <p style="margin-bottom:16px"><strong style="color:#fff">4. Variables disponibles</strong><br>
+          <code style="font-family:var(--mono);font-size:12px;background:#0a0820;padding:2px 8px;border-radius:4px;color:#c4b5fd">{{nombre}}</code>
+          <code style="font-family:var(--mono);font-size:12px;background:#0a0820;padding:2px 8px;border-radius:4px;color:#c4b5fd;margin-left:6px">{{email}}</code>
+          <code style="font-family:var(--mono);font-size:12px;background:#0a0820;padding:2px 8px;border-radius:4px;color:#c4b5fd;margin-left:6px">{{ciudad}}</code>
+          <code style="font-family:var(--mono);font-size:12px;background:#0a0820;padding:2px 8px;border-radius:4px;color:#c4b5fd;margin-left:6px">{{empresa}}</code>
+          <code style="font-family:var(--mono);font-size:12px;background:#0a0820;padding:2px 8px;border-radius:4px;color:#c4b5fd;margin-left:6px">{{pais}}</code>
+          </p>
+          <div class="sep"></div>
+          <p><strong style="color:#fff">5. GitHub / Publicar online</strong><br>Sube este archivo a <a href="https://github.com" style="color:var(--accent2)">GitHub</a> y activa <strong>GitHub Pages</strong> para tener una URL permanente. O arrastra el archivo a <a href="https://app.netlify.com/drop" style="color:var(--accent2)">Netlify Drop</a> para una URL instantánea.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔗 Links útiles</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <a href="https://emailjs.com" target="_blank" style="display:block;background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="font-size:22px;margin-bottom:8px">📧</div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">EmailJS</div>
+            <div style="font-size:11px;color:var(--muted)">Configurar envíos</div>
+          </a>
+          <a href="https://app.netlify.com/drop" target="_blank" style="display:block;background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="font-size:22px;margin-bottom:8px">🚀</div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">Netlify Drop</div>
+            <div style="font-size:11px;color:var(--muted)">Publicar online gratis</div>
+          </a>
+          <a href="https://eoscommunity.online" target="_blank" style="display:block;background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="font-size:22px;margin-bottom:8px">⚡</div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">EOS Community</div>
+            <div style="font-size:11px;color:var(--muted)">Sitio principal</div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
 </main>
+
 <div id="toast"></div>
 
 <script>
-// STATE
-let contacts  = JSON.parse(localStorage.getItem('mb_v2_contacts')  || '[]');
-let campaigns = JSON.parse(localStorage.getItem('mb_v2_campaigns') || '[]');
-let config    = JSON.parse(localStorage.getItem('mb_v2_config')    || '{}');
+// ════════════ STATE ════════════
+let contacts  = JSON.parse(localStorage.getItem('mb_v3_contacts')  || '[]');
+let campaigns = JSON.parse(localStorage.getItem('mb_v3_campaigns') || '[]');
+let config    = JSON.parse(localStorage.getItem('mb_v3_config')    || '{}');
 let pendingImport = [];
 let activeDesign  = 'visual';
-let selectedTpl   = 0;
-let currentTarget = 'suscritos';
-let activeChip    = 'todos';
+let selTpl   = 0;
+let curTarget = 'suscritos';
+let activeChip = 'todos';
 
-// TEMPLATES
-const TEMPLATES = [
+// ════════════ TEMPLATES ════════════
+const TPLS = [
   { name:'EOS Oscuro', icon:'🌙',
-    build:(c,t,b,btn,url,logo) => `<div style="background:#0a0618;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#12102a;border-radius:20px;overflow:hidden;border:1px solid #2d2060"><div style="background:linear-gradient(135deg,${c},${c}aa);padding:34px;text-align:center"><h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;letter-spacing:-1px">${logo||'EOS Community'}</h1><p style="color:#ffffff88;margin:6px 0 0;font-size:13px">eoscommunity.online</p></div><div style="padding:36px"><h2 style="color:#e4e2f0;font-size:22px;margin:0 0 18px;font-weight:700">${t||'¡Hola {{nombre}}!'}</h2><div style="color:#b0a8c8;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:15px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;box-shadow:0 4px 20px ${c}55">${btn}</a></div>`:''}</div><div style="background:#07050f;padding:20px 36px;text-align:center;border-top:1px solid #2d2060"><p style="color:#444;font-size:11px;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
+    fn:(c,t,b,btn,url,logo)=>`<div style="background:#0a0618;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#12102a;border-radius:20px;overflow:hidden;border:1px solid #2d2060"><div style="background:linear-gradient(135deg,${c},${c}99);padding:34px;text-align:center"><h1 style="color:#fff;margin:0;font-size:26px;font-weight:800;letter-spacing:-1px">${logo||'EOS Community'}</h1><p style="color:#ffffff77;margin:6px 0 0;font-size:12px">eoscommunity.online</p></div><div style="padding:36px"><h2 style="color:#e4e2f0;font-size:22px;margin:0 0 18px;font-weight:700">${t||'¡Hola {{nombre}}!'}</h2><div style="color:#b0a8c8;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:15px 36px;border-radius:50px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;box-shadow:0 4px 20px ${c}55">${btn}</a></div>`:''}</div><div style="background:#07050f;padding:20px 36px;text-align:center;border-top:1px solid #2d2060"><p style="color:#444;font-size:11px;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
   },
   { name:'Reactivación', icon:'⚡',
-    build:(c,t,b,btn,url,logo) => `<div style="background:#fff9f0;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12)"><div style="background:linear-gradient(135deg,${c},${c}88);padding:36px;position:relative;overflow:hidden"><div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:#ffffff15;border-radius:50%"></div><h1 style="color:#fff;margin:0;font-size:28px;font-weight:900;position:relative">${logo||'EOS Community'}</h1><p style="color:#ffffffcc;margin:6px 0 0;font-size:13px;position:relative">¡Te necesitamos de vuelta!</p></div><div style="padding:40px"><h2 style="color:#1a0a00;font-size:24px;margin:0 0 20px;font-weight:800;line-height:1.3">${t||'Hola {{nombre}}, ¿todo bien?'}</h2><div style="color:#444;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;display:inline-block">${btn}</a></div>`:''}</div><div style="background:#f5f0e8;padding:20px 40px;border-top:2px dashed #e0d5c5;display:flex;justify-content:space-between;align-items:center"><span style="color:#888;font-size:12px">© ${new Date().getFullYear()} ${logo||'EOS Community'}</span><a href="${url||'#'}" style="color:${c};font-size:12px;font-weight:700;text-decoration:none">Visitar sitio →</a></div></div></div>`
+    fn:(c,t,b,btn,url,logo)=>`<div style="background:#fff9f0;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.12)"><div style="background:linear-gradient(135deg,${c},${c}88);padding:36px;position:relative;overflow:hidden"><div style="position:absolute;top:-30px;right:-30px;width:120px;height:120px;background:#fff2;border-radius:50%"></div><h1 style="color:#fff;margin:0;font-size:28px;font-weight:900;position:relative">${logo||'EOS Community'}</h1><p style="color:#ffffffcc;margin:6px 0 0;font-size:13px;position:relative">¡Te necesitamos de vuelta!</p></div><div style="padding:40px"><h2 style="color:#1a0a00;font-size:24px;margin:0 0 20px;font-weight:800;line-height:1.3">${t||'Hola {{nombre}}, ¿todo bien?'}</h2><div style="color:#444;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:16px 40px;border-radius:12px;text-decoration:none;font-weight:800;font-size:16px;display:inline-block">${btn}</a></div>`:''}</div><div style="background:#f5f0e8;padding:20px 40px;border-top:2px dashed #e0d5c5;display:flex;justify-content:space-between;align-items:center"><span style="color:#888;font-size:12px">© ${new Date().getFullYear()} ${logo||'EOS Community'}</span><a href="${url||'#'}" style="color:${c};font-size:12px;font-weight:700;text-decoration:none">Visitar →</a></div></div></div>`
   },
   { name:'Newsletter', icon:'📰',
-    build:(c,t,b,btn,url,logo) => `<div style="background:#f4f4f8;padding:40px 16px;font-family:Georgia,serif"><div style="max-width:580px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:4px solid ${c};padding-bottom:14px;margin-bottom:30px"><span style="font-size:24px;font-weight:900;color:#0a0010;letter-spacing:-1.5px">${logo||'EOS Community'}</span><span style="font-size:11px;color:#aaa;font-family:monospace">${new Date().toLocaleDateString('es-CO')}</span></div><h2 style="font-size:32px;color:#0a0010;margin:0 0 22px;font-weight:900;line-height:1.2">${t||'Hola {{nombre}}'}</h2><div style="color:#333;font-size:16px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="margin-top:32px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:14px 30px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;font-family:sans-serif">${btn}</a></div>`:''}<div style="border-top:3px solid ${c};margin-top:40px;padding-top:18px"><p style="color:#aaa;font-size:12px;font-family:monospace;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
+    fn:(c,t,b,btn,url,logo)=>`<div style="background:#f4f4f8;padding:40px 16px;font-family:Georgia,serif"><div style="max-width:580px;margin:0 auto"><div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:4px solid ${c};padding-bottom:14px;margin-bottom:30px"><span style="font-size:24px;font-weight:900;color:#0a0010;letter-spacing:-1.5px">${logo||'EOS Community'}</span><span style="font-size:11px;color:#aaa;font-family:monospace">${new Date().toLocaleDateString('es-CO')}</span></div><h2 style="font-size:32px;color:#0a0010;margin:0 0 22px;font-weight:900;line-height:1.2">${t||'Hola {{nombre}}'}</h2><div style="color:#333;font-size:16px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="margin-top:32px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:14px 30px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px;display:inline-block;font-family:sans-serif">${btn}</a></div>`:''}<div style="border-top:3px solid ${c};margin-top:40px;padding-top:18px"><p style="color:#aaa;font-size:12px;font-family:monospace;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
   },
   { name:'Minimalista', icon:'◻',
-    build:(c,t,b,btn,url,logo) => `<div style="background:#fff;padding:60px 16px;font-family:'Helvetica Neue',Arial,sans-serif"><div style="max-width:520px;margin:0 auto"><div style="width:48px;height:5px;background:${c};margin-bottom:36px;border-radius:3px"></div><p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#bbb;margin:0 0 20px;font-family:monospace">${logo||'EOS Community'}</p><h2 style="font-size:28px;color:#111;margin:0 0 26px;font-weight:300;line-height:1.35">${t||'Hola {{nombre}}'}</h2><div style="color:#555;font-size:16px;line-height:1.95;white-space:pre-wrap">${b||''}</div>${btn?`<div style="margin-top:40px"><a href="${url||'#'}" style="color:${c};font-size:15px;font-weight:700;text-decoration:none;border-bottom:2px solid ${c};padding-bottom:3px">${btn} →</a></div>`:''}<div style="margin-top:52px;padding-top:24px;border-top:1px solid #eee"><p style="color:#ddd;font-size:11px;margin:0;font-family:monospace">© ${new Date().getFullYear()} ${logo||'EOS Community'} · UNSUB para desuscribirte</p></div></div></div>`
+    fn:(c,t,b,btn,url,logo)=>`<div style="background:#fff;padding:60px 16px;font-family:'Helvetica Neue',Arial,sans-serif"><div style="max-width:520px;margin:0 auto"><div style="width:48px;height:5px;background:${c};margin-bottom:36px;border-radius:3px"></div><p style="font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#bbb;margin:0 0 20px;font-family:monospace">${logo||'EOS Community'}</p><h2 style="font-size:28px;color:#111;margin:0 0 26px;font-weight:300;line-height:1.35">${t||'Hola {{nombre}}'}</h2><div style="color:#555;font-size:16px;line-height:1.95;white-space:pre-wrap">${b||''}</div>${btn?`<div style="margin-top:40px"><a href="${url||'#'}" style="color:${c};font-size:15px;font-weight:700;text-decoration:none;border-bottom:2px solid ${c};padding-bottom:3px">${btn} →</a></div>`:''}<div style="margin-top:52px;padding-top:24px;border-top:1px solid #eee"><p style="color:#ddd;font-size:11px;margin:0;font-family:monospace">© ${new Date().getFullYear()} ${logo||'EOS Community'} · UNSUB para desuscribirte</p></div></div></div>`
   },
   { name:'Vibrante', icon:'✨',
-    build:(c,t,b,btn,url,logo) => `<div style="background:#f0ebff;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 12px 60px ${c}33"><div style="background:${c};padding:40px;text-align:center"><div style="width:64px;height:64px;background:#ffffff33;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px">🌟</div><h1 style="color:#fff;margin:0;font-size:26px;font-weight:800">${logo||'EOS Community'}</h1></div><div style="padding:40px"><h2 style="color:#1a1630;font-size:23px;margin:0 0 20px">${t||'¡Hola {{nombre}}!'}</h2><div style="color:#555;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:16px 40px;border-radius:50px;text-decoration:none;font-weight:800;font-size:15px;display:inline-block;box-shadow:0 6px 24px ${c}44">${btn}</a></div>`:''}</div><div style="background:#f8f4ff;padding:20px;text-align:center;border-top:1px solid #ece0ff"><p style="color:#aaa;font-size:11px;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
+    fn:(c,t,b,btn,url,logo)=>`<div style="background:#f0ebff;padding:40px 16px;font-family:'Segoe UI',Arial,sans-serif"><div style="max-width:580px;margin:0 auto;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 12px 60px ${c}33"><div style="background:${c};padding:40px;text-align:center"><div style="width:64px;height:64px;background:#fff3;border-radius:16px;display:inline-flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:14px">🌟</div><h1 style="color:#fff;margin:0;font-size:26px;font-weight:800">${logo||'EOS Community'}</h1></div><div style="padding:40px"><h2 style="color:#1a1630;font-size:23px;margin:0 0 20px">${t||'¡Hola {{nombre}}!'}</h2><div style="color:#555;font-size:15px;line-height:1.9;white-space:pre-wrap">${b||''}</div>${btn?`<div style="text-align:center;margin-top:36px"><a href="${url||'#'}" style="background:${c};color:#fff;padding:16px 40px;border-radius:50px;text-decoration:none;font-weight:800;font-size:15px;display:inline-block;box-shadow:0 6px 24px ${c}44">${btn}</a></div>`:''}</div><div style="background:#f8f4ff;padding:20px;text-align:center;border-top:1px solid ${c}22"><p style="color:#aaa;font-size:11px;margin:0">© ${new Date().getFullYear()} ${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div></div>`
   },
-  { name:'Solo texto', icon:'📄',
-    build:(c,t,b,btn,url,logo) => `<div style="background:#f8f8f8;padding:40px 16px;font-family:monospace"><div style="max-width:560px;margin:0 auto;background:#fff;padding:36px;border-left:4px solid ${c}"><p style="color:#aaa;font-size:11px;margin:0 0 24px;text-transform:uppercase;letter-spacing:3px">${logo||'EOS Community'} — ${new Date().toLocaleDateString('es-CO')}</p><p style="color:#111;font-size:16px;font-weight:700;margin:0 0 18px">${t||'Hola {{nombre}},'}</p><div style="color:#333;font-size:14px;line-height:1.85;white-space:pre-wrap">${b||''}</div>${btn?`<p style="margin:24px 0 0"><a href="${url||'#'}" style="color:${c};font-weight:700">&gt;&gt; ${btn}</a></p>`:''}<hr style="border:none;border-top:1px dashed #ddd;margin:28px 0"><p style="color:#ccc;font-size:11px;margin:0">${logo||'EOS Community'} · Responde UNSUB</p></div></div>`
+  { name:'Texto', icon:'📄',
+    fn:(c,t,b,btn,url,logo)=>`<div style="background:#f8f8f8;padding:40px 16px;font-family:monospace"><div style="max-width:560px;margin:0 auto;background:#fff;padding:36px;border-left:4px solid ${c}"><p style="color:#aaa;font-size:11px;margin:0 0 24px;text-transform:uppercase;letter-spacing:3px">${logo||'EOS Community'} — ${new Date().toLocaleDateString('es-CO')}</p><p style="color:#111;font-size:16px;font-weight:700;margin:0 0 18px">${t||'Hola {{nombre}},'}</p><div style="color:#333;font-size:14px;line-height:1.85;white-space:pre-wrap">${b||''}</div>${btn?`<p style="margin:24px 0 0"><a href="${url||'#'}" style="color:${c};font-weight:700">&gt;&gt; ${btn}</a></p>`:''}<hr style="border:none;border-top:1px dashed #ddd;margin:28px 0"><p style="color:#ccc;font-size:11px;margin:0">${logo||'EOS Community'} · Responde UNSUB para desuscribirte</p></div></div>`
   },
 ];
 
-// INIT
+// ════════════ INIT ════════════
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('date-display').textContent =
     new Date().toLocaleDateString('es-CO',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
@@ -504,28 +785,28 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderAll() {
-  renderContacts(); renderInactivos(); renderDashboard();
-  updatePaisFilters(); updateTargetDescs(); updateSendCount(); updateSidebarStats();
-  updatePreviewSelect();
+  renderContacts(); renderInactivos(); renderDashboard(); renderHistorial();
+  updatePaisFilters(); updateTargetDescs(); updateSendCount();
+  updateSidebarStats(); updateNavBadges(); updatePreviewSelect();
 }
 
-// TEMPLATE GRID
+// ════════════ TEMPLATE GRID ════════════
 function buildTplGrid() {
-  document.getElementById('tpl-grid').innerHTML = TEMPLATES.map((t,i)=>`
-    <div class="tpl-card ${i===selectedTpl?'sel':''}" onclick="selectTpl(${i})">
+  document.getElementById('tpl-grid').innerHTML = TPLS.map((t,i)=>`
+    <div class="tpl-card ${i===selTpl?'sel':''}" onclick="pickTpl(${i})">
       <div class="tpl-thumb">${t.icon}</div>
       <div class="tpl-name">${t.name}</div>
     </div>`).join('');
 }
-function selectTpl(i) {
-  selectedTpl=i; buildTplGrid();
+function pickTpl(i) {
+  selTpl=i; buildTplGrid();
   document.getElementById('ve-fields').style.display='block';
   rebuildTpl();
 }
 function rebuildTpl() {
-  const g = id => document.getElementById(id)?.value||'';
+  const g=id=>document.getElementById(id)?.value||'';
   document.getElementById('camp-html').value =
-    TEMPLATES[selectedTpl].build(g('ve-color')||'#6c4ef2',g('ve-title'),g('ve-body'),g('ve-btn'),g('ve-url'),g('ve-logo'));
+    TPLS[selTpl].fn(g('ve-color')||'#6c4ef2',g('ve-title'),g('ve-body'),g('ve-btn'),g('ve-url'),g('ve-logo'));
   updatePreview();
 }
 function vInsert(v) {
@@ -544,12 +825,13 @@ function swDtab(mode,el) {
   updatePreview();
 }
 
-// IMPORT XLSX
+// ════════════ IMPORT XLSX ════════════
 function dOver(e){e.preventDefault();document.getElementById('drop-zone').classList.add('drag-over');}
 function dLeave(){document.getElementById('drop-zone').classList.remove('drag-over');}
 function dDrop(e){e.preventDefault();dLeave();const f=e.dataTransfer.files[0];if(f)processFile(f);}
 function loadXLSX(e){const f=e.target.files[0];if(f)processFile(f);e.target.value='';}
-function processFile(file){
+
+function processFile(file) {
   const isCSV=file.name.endsWith('.csv');
   const reader=new FileReader();
   reader.onload=(ev)=>{
@@ -558,26 +840,32 @@ function processFile(file){
       const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
       if(!rows.length){toast('El archivo está vacío','error');return;}
       parseRows(rows);
-    }catch(e){toast('Error: '+e.message,'error');}
+    }catch(e){toast('Error leyendo archivo: '+e.message,'error');}
   };
   isCSV?reader.readAsText(file):reader.readAsArrayBuffer(file);
 }
-function mapRow(row){
-  const get=(...ns)=>{for(const n of ns)for(const k of Object.keys(row))if(k.toLowerCase().replace(/\s/g,'')===n.toLowerCase().replace(/\s/g,''))return String(row[k]||'').trim();return '';};
-  const email=get('correo','email','e-mail','mail');
-  if(!email||!email.includes('@'))return null;
-  const nombre=get('nombre')||''; const apellido=get('apellido')||'';
-  const estatusRaw=get('estatus','status','estado')||'Inactivo';
+
+function mapRow(row) {
+  const get=(...ns)=>{for(const n of ns)for(const k of Object.keys(row))if(k.toLowerCase().replace(/\s+/g,'').replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u')===n.toLowerCase().replace(/\s+/g,'').replace(/[áàä]/g,'a').replace(/[éèë]/g,'e').replace(/[íìï]/g,'i').replace(/[óòö]/g,'o').replace(/[úùü]/g,'u'))return String(row[k]||'').trim();return'';};
+  const email=get('correo','email','e-mail','mail','emailaddress');
+  if(!email||!email.includes('@')||!email.includes('.'))return null;
+  const nombre=get('nombre','firstname','name')||'';
+  const apellido=get('apellido','lastname','surname')||'';
+  const estatusRaw=get('estatus','status','estado','active')||'Inactivo';
   const eosActivo=estatusRaw.toLowerCase().includes('activ');
   return {
-    id:Date.now()+Math.random(), nombre:[nombre,apellido].filter(Boolean).join(' ')||email,
+    id: Date.now()+Math.random(),
+    nombre:[nombre,apellido].filter(Boolean).join(' ')||email.split('@')[0],
     email, empresa:get('patrocinador','sponsor','empresa','company')||'',
-    ciudad:get('ciudad','city')||'', pais:get('país','pais','country')||'',
-    eosActivo, mailEstado: eosActivo?'suscrito':'habilitado'
+    ciudad:get('ciudad','city')||'', pais:get('pais','country','pa\u00eds')||'',
+    telefono:get('celular','telefono','tel\u00e9fono','phone')||'',
+    eosActivo, mailEstado:eosActivo?'suscrito':'habilitado',
+    fechaImport: new Date().toLocaleDateString('es-CO')
   };
 }
-function parseRows(rows){
-  pendingImport=[];let skipped=0;
+
+function parseRows(rows) {
+  pendingImport=[]; let skipped=0;
   for(const row of rows){
     const m=mapRow(row);
     if(!m){skipped++;continue;}
@@ -588,29 +876,40 @@ function parseRows(rows){
   const ina=pendingImport.filter(c=>!c.eosActivo).length;
   document.getElementById('import-summary').textContent=
     `📊 ${pendingImport.length} nuevos · ${skipped} omitidos | ✅ ${act} Activos · ⚠️ ${ina} Inactivos`;
+  const preview=[...pendingImport.filter(c=>c.eosActivo).slice(0,4),...pendingImport.filter(c=>!c.eosActivo).slice(0,4)];
   document.getElementById('import-table').innerHTML=`<table>
     <thead><tr><th>Nombre</th><th>Email</th><th>País</th><th>Estatus EOS</th><th>Correo</th></tr></thead>
-    <tbody>${[...pendingImport.filter(c=>c.eosActivo).slice(0,4),...pendingImport.filter(c=>!c.eosActivo).slice(0,4)].map(c=>`<tr>
+    <tbody>${preview.map(c=>`<tr>
       <td class="bold">${esc(c.nombre)}</td><td class="mono">${esc(c.email)}</td>
       <td>${esc(c.pais)}</td>
       <td><span class="badge ${c.eosActivo?'b-activo':'b-inactivo'}">${c.eosActivo?'Activo':'Inactivo'}</span></td>
       <td><span class="badge ${c.mailEstado==='suscrito'?'b-suscrito':'b-habilitado'}">${c.mailEstado}</span></td>
     </tr>`).join('')}
-    ${pendingImport.length>8?`<tr><td colspan="5" style="color:var(--muted);text-align:center">… y ${pendingImport.length-8} más</td></tr>`:''}
-    </tbody></table>`;
+    ${pendingImport.length>8?`<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:10px">… y ${pendingImport.length-8} más</td></tr>`:''}</tbody></table>`;
   document.getElementById('import-area').style.display='block';
 }
-function confirmImport(){if(!pendingImport.length)return;contacts.push(...pendingImport);saveContacts();renderAll();toast(`✅ ${pendingImport.length} contactos importados`);pendingImport=[];document.getElementById('import-area').style.display='none';}
+
+function confirmImport(){
+  if(!pendingImport.length)return;
+  contacts.push(...pendingImport);
+  saveContacts(); renderAll();
+  toast(`✅ ${pendingImport.length} contactos importados correctamente`,'success');
+  pendingImport=[];
+  document.getElementById('import-area').style.display='none';
+}
 function cancelImport(){pendingImport=[];document.getElementById('import-area').style.display='none';}
 
-// CONTACTS
-function saveContacts(){localStorage.setItem('mb_v2_contacts',JSON.stringify(contacts));}
-function renderContacts(){
+// ════════════ CONTACTS ════════════
+function saveContacts(){localStorage.setItem('mb_v3_contacts',JSON.stringify(contacts));}
+
+function renderContacts() {
   const search=(document.getElementById('s-search')?.value||'').toLowerCase();
-  const filterPais=document.getElementById('s-pais')?.value||'';
+  const fp=document.getElementById('s-pais')?.value||'';
+  const fm=document.getElementById('s-mail')?.value||'';
   const filtered=contacts.filter(c=>{
     if(search&&!c.nombre.toLowerCase().includes(search)&&!c.email.toLowerCase().includes(search))return false;
-    if(filterPais&&c.pais!==filterPais)return false;
+    if(fp&&c.pais!==fp)return false;
+    if(fm&&c.mailEstado!==fm)return false;
     if(activeChip==='activo'&&!c.eosActivo)return false;
     if(activeChip==='inactivo'&&c.eosActivo)return false;
     return true;
@@ -623,22 +922,29 @@ function renderContacts(){
     <td><input type="checkbox" class="rcheck" data-id="${c.id}"></td>
     <td class="bold">${esc(c.nombre)}</td>
     <td class="mono">${esc(c.email)}</td>
-    <td style="font-size:12px">${esc(c.pais||'—')}</td>
+    <td style="font-size:11px">${esc(c.pais||'—')}</td>
     <td><span class="badge ${c.eosActivo?'b-activo':'b-inactivo'}">${c.eosActivo?'Activo':'Inactivo'}</span></td>
     <td><span class="badge ${mailBadge(c.mailEstado)}">${c.mailEstado}</span></td>
     <td style="display:flex;gap:5px;flex-wrap:wrap">
-      <button class="btn btn-ghost" style="padding:4px 9px;font-size:11px" onclick="cycleMailState(${c.id})">${nextLabel(c.mailEstado)}</button>
-      <button class="btn btn-danger" style="padding:4px 9px;font-size:11px" onclick="removeContact(${c.id})">✕</button>
+      <button class="btn btn-ghost btn-sm" onclick="cycleMailState(${c.id})">${nextLabel(c.mailEstado)}</button>
+      <button class="btn btn-danger btn-sm" onclick="removeContact(${c.id})">✕</button>
     </td>
   </tr>`).join('');
 }
+
 function mailBadge(s){return s==='suscrito'?'b-suscrito':s==='habilitado'?'b-habilitado':'b-desuscrito';}
-function nextLabel(s){return s==='suscrito'?'→ Deshabilitar':s==='habilitado'?'→ Suscribir':'→ Habilitar';}
+function nextLabel(s){return s==='suscrito'?'Deshabilitar':s==='habilitado'?'Suscribir':'Habilitar';}
+
 function cycleMailState(id){
-  contacts=contacts.map(c=>{if(c.id!==id)return c;const n=c.mailEstado==='suscrito'?'desuscrito':c.mailEstado==='habilitado'?'suscrito':'habilitado';return{...c,mailEstado:n};});
+  contacts=contacts.map(c=>{
+    if(c.id!==id)return c;
+    const n=c.mailEstado==='suscrito'?'desuscrito':c.mailEstado==='habilitado'?'suscrito':'habilitado';
+    return{...c,mailEstado:n};
+  });
   saveContacts();renderContacts();renderInactivos();updateTargetDescs();updateSendCount();updateSidebarStats();
 }
-function renderInactivos(){
+
+function renderInactivos() {
   const search=(document.getElementById('si-search')?.value||'').toLowerCase();
   const fp=document.getElementById('si-pais')?.value||'';
   const inactivos=contacts.filter(c=>{
@@ -647,46 +953,47 @@ function renderInactivos(){
     if(fp&&c.pais!==fp)return false;
     return true;
   });
-  document.getElementById('icount').textContent=`${inactivos.length} inactivos`;
-  document.getElementById('ititle').textContent=`— ${inactivos.length}`;
+  document.getElementById('icount').textContent=`${inactivos.length}`;
+  document.getElementById('ititle').textContent=`— ${inactivos.length} usuarios`;
   const tbody=document.getElementById('itbody');
   if(!inactivos.length){tbody.innerHTML='<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:28px">No hay inactivos. Importa el XLSX de EOS.</td></tr>';return;}
   tbody.innerHTML=inactivos.map(c=>`<tr>
     <td><input type="checkbox" class="icheck" data-id="${c.id}"></td>
     <td class="bold">${esc(c.nombre)}</td>
     <td class="mono">${esc(c.email)}</td>
-    <td style="font-size:12px">${esc(c.pais||'—')}</td>
-    <td style="font-size:12px">${esc(c.ciudad||'—')}</td>
+    <td style="font-size:11px">${esc(c.pais||'—')}</td>
+    <td style="font-size:11px">${esc(c.ciudad||'—')}</td>
     <td>
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
         <input type="checkbox" ${c.mailEstado!=='desuscrito'?'checked':''} onchange="toggleHabilitar(${c.id},this.checked)" style="width:auto;accent-color:var(--yellow)">
         <span class="badge ${c.mailEstado==='desuscrito'?'b-desuscrito':'b-habilitado'}">${c.mailEstado==='desuscrito'?'No enviar':'Habilitado'}</span>
       </label>
     </td>
-    <td><button class="btn btn-green" style="padding:5px 10px;font-size:11px" onclick="markSuscrito(${c.id})">✅ Suscribir</button></td>
+    <td><button class="btn btn-green btn-sm" onclick="markSuscrito(${c.id})">✅ Suscribir</button></td>
   </tr>`).join('');
 }
+
 function toggleHabilitar(id,checked){
   contacts=contacts.map(c=>c.id===id?{...c,mailEstado:checked?'habilitado':'desuscrito'}:c);
-  saveContacts();renderInactivos();updateTargetDescs();updateSendCount();
+  saveContacts();renderInactivos();updateTargetDescs();updateSendCount();updateNavBadges();
 }
 function markSuscrito(id){
   contacts=contacts.map(c=>c.id===id?{...c,mailEstado:'suscrito',eosActivo:true}:c);
-  saveContacts();renderAll();toast('✅ Usuario marcado como suscrito y activo');
+  saveContacts();renderAll();toast('✅ Usuario reactivado y marcado como suscrito');
 }
-function habilitarTodosInactivos(){
+function habilitarTodos(){
   let n=0;
   contacts=contacts.map(c=>{if(!c.eosActivo&&c.mailEstado==='desuscrito'){n++;return{...c,mailEstado:'habilitado'};}return c;});
   saveContacts();renderAll();toast(`✅ ${n} inactivos habilitados para correo`);
 }
+function deshabilitarTodos(){
+  let n=0;
+  contacts=contacts.map(c=>{if(!c.eosActivo&&c.mailEstado!=='desuscrito'){n++;return{...c,mailEstado:'desuscrito'};}return c;});
+  saveContacts();renderAll();toast(`🚫 ${n} inactivos deshabilitados`,'info');
+}
 function goSendInactive(){
   selTarget('inactivos');
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
-  document.getElementById('tab-campana').classList.add('active');
-  document.querySelectorAll('nav a')[3].classList.add('active');
-  document.getElementById('page-title').textContent='✉️ Campaña';
-  updatePreviewSelect();updateSendCount();
+  goto('campana',document.querySelectorAll('nav a')[4]);
 }
 function setChip(chip){
   activeChip=chip;
@@ -700,7 +1007,7 @@ function addContact(){
   const n=document.getElementById('f-nombre').value.trim();
   const e=document.getElementById('f-email').value.trim();
   if(!n||!e){toast('Nombre y email obligatorios','error');return;}
-  contacts.push({id:Date.now(),nombre:n,email:e,empresa:document.getElementById('f-empresa').value.trim(),ciudad:'',pais:'',eosActivo:true,mailEstado:'suscrito'});
+  contacts.push({id:Date.now(),nombre:n,email:e,empresa:document.getElementById('f-empresa').value.trim(),ciudad:'',pais:'',eosActivo:true,mailEstado:'suscrito',fechaImport:new Date().toLocaleDateString('es-CO')});
   saveContacts();renderAll();toggleAF();
   ['f-nombre','f-email','f-empresa'].forEach(id=>document.getElementById(id).value='');
   toast('✅ Contacto agregado');
@@ -709,23 +1016,48 @@ function removeContact(id){contacts=contacts.filter(c=>c.id!==id);saveContacts()
 function toggleAll(cb){document.querySelectorAll('.rcheck').forEach(c=>c.checked=cb.checked);}
 function toggleIAll(cb){document.querySelectorAll('.icheck').forEach(c=>c.checked=cb.checked);}
 function getSelIds(){return[...document.querySelectorAll('.rcheck:checked')].map(c=>Number(c.dataset.id));}
-function bulkMail(estado){const ids=getSelIds();if(!ids.length){toast('Selecciona contactos','error');return;}contacts=contacts.map(c=>ids.includes(c.id)?{...c,mailEstado:estado}:c);saveContacts();renderContacts();updateTargetDescs();updateSendCount();toast(`✅ ${ids.length} actualizados`);}
-function bulkDelete(){const ids=getSelIds();if(!ids.length){toast('Selecciona contactos','error');return;}if(!confirm(`¿Eliminar ${ids.length}?`))return;contacts=contacts.filter(c=>!ids.includes(c.id));saveContacts();renderAll();}
-function clearAll(){if(!confirm('¿Eliminar TODOS los contactos?'))return;contacts=[];saveContacts();renderAll();toast('🗑 Limpizado','info');}
+function bulkMail(estado){
+  const ids=getSelIds();
+  if(!ids.length){toast('Selecciona contactos primero','error');return;}
+  contacts=contacts.map(c=>ids.includes(c.id)?{...c,mailEstado:estado}:c);
+  saveContacts();renderContacts();updateTargetDescs();updateSendCount();
+  toast(`✅ ${ids.length} contactos → ${estado}`);
+}
+function bulkDelete(){
+  const ids=getSelIds();
+  if(!ids.length){toast('Selecciona contactos','error');return;}
+  if(!confirm(`¿Eliminar ${ids.length} contactos?`))return;
+  contacts=contacts.filter(c=>!ids.includes(c.id));
+  saveContacts();renderAll();toast(`🗑 ${ids.length} eliminados`,'info');
+}
+function clearAll(){
+  if(!confirm('¿Eliminar TODOS los contactos? No se puede deshacer.'))return;
+  contacts=[];saveContacts();renderAll();toast('🗑 Todos los contactos eliminados','info');
+}
+function exportCSV(){
+  if(!contacts.length){toast('No hay contactos para exportar','error');return;}
+  const headers=['nombre','email','empresa','ciudad','pais','eosActivo','mailEstado','fechaImport'];
+  const csv=[headers.join(','),...contacts.map(c=>headers.map(h=>JSON.stringify(c[h]||'')).join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='contactos-eos-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('📤 CSV exportado');
+}
 
-// TARGET
+// ════════════ TARGET ════════════
 function getTargetContacts(){
-  if(currentTarget==='suscritos') return contacts.filter(c=>c.mailEstado==='suscrito');
-  if(currentTarget==='activos')   return contacts.filter(c=>c.eosActivo&&c.mailEstado!=='desuscrito');
-  if(currentTarget==='inactivos') return contacts.filter(c=>!c.eosActivo&&c.mailEstado==='habilitado');
-  if(currentTarget==='todos')     return contacts.filter(c=>c.mailEstado!=='desuscrito');
-  return [];
+  if(curTarget==='suscritos') return contacts.filter(c=>c.mailEstado==='suscrito');
+  if(curTarget==='activos')   return contacts.filter(c=>c.eosActivo&&c.mailEstado!=='desuscrito');
+  if(curTarget==='inactivos') return contacts.filter(c=>!c.eosActivo&&c.mailEstado==='habilitado');
+  if(curTarget==='todos')     return contacts.filter(c=>c.mailEstado!=='desuscrito');
+  return[];
 }
 function selTarget(t){
-  currentTarget=t;
+  curTarget=t;
   document.querySelectorAll('.topt').forEach(el=>el.classList.remove('sel'));
   document.getElementById('topt-'+t)?.classList.add('sel');
-  const radio=document.querySelector(`input[value="${t}"]`);if(radio)radio.checked=true;
+  const r=document.querySelector(`input[value="${t}"]`);if(r)r.checked=true;
   updateSendCount();updatePreviewSelect();
 }
 function updateTargetDescs(){
@@ -733,19 +1065,34 @@ function updateTargetDescs(){
   const act=contacts.filter(c=>c.eosActivo&&c.mailEstado!=='desuscrito').length;
   const ina=contacts.filter(c=>!c.eosActivo&&c.mailEstado==='habilitado').length;
   const tod=contacts.filter(c=>c.mailEstado!=='desuscrito').length;
-  const s=id=>{const el=document.getElementById(id);if(el)el.textContent=arguments[1];};
-  document.getElementById('tdesc-suscritos') && (document.getElementById('tdesc-suscritos').textContent=`${sus} suscritos`);
-  document.getElementById('tdesc-activos')   && (document.getElementById('tdesc-activos').textContent=`${act} activos EOS`);
-  document.getElementById('tdesc-inactivos') && (document.getElementById('tdesc-inactivos').textContent=`${ina} inactivos habilitados`);
-  document.getElementById('tdesc-todos')     && (document.getElementById('tdesc-todos').textContent=`${tod} en total`);
+  const s=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const n=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  s('tdesc-sus','Usuarios suscritos al correo'); n('tcount-sus',sus);
+  s('tdesc-act','Activos EOS con correo activo'); n('tcount-act',act);
+  s('tdesc-ina','Inactivos con correo habilitado'); n('tcount-ina',ina);
+  s('tdesc-tod','Activos + inactivos habilitados'); n('tcount-tod',tod);
 }
-function updateSendCount(){const n=getTargetContacts().length;const el=document.getElementById('send-count');if(el)el.textContent=`${n} destinatarios`;}
+function updateSendCount(){
+  const n=getTargetContacts().length;
+  const el=document.getElementById('send-count');
+  if(el)el.textContent=n?`${n} destinatarios`:'⚠️ 0 destinatarios';
+}
 
-// INTERP
-function interp(text,c){return text.replace(/\{\{nombre\}\}/g,c.nombre||'').replace(/\{\{empresa\}\}/g,c.empresa||'').replace(/\{\{email\}\}/g,c.email||'').replace(/\{\{ciudad\}\}/g,c.ciudad||'').replace(/\{\{pais\}\}/g,c.pais||'');}
-function getBody(c){return activeDesign==='texto'?interp(document.getElementById('camp-body').value,c):interp(document.getElementById('camp-html').value,c);}
+// ════════════ INTERP ════════════
+function interp(text,c){
+  return text
+    .replace(/\{\{nombre\}\}/g,c.nombre||'')
+    .replace(/\{\{empresa\}\}/g,c.empresa||'')
+    .replace(/\{\{email\}\}/g,c.email||'')
+    .replace(/\{\{ciudad\}\}/g,c.ciudad||'')
+    .replace(/\{\{pais\}\}/g,c.pais||'');
+}
+function getBody(c){
+  if(activeDesign==='texto')return interp(document.getElementById('camp-body').value,c);
+  return interp(document.getElementById('camp-html').value,c);
+}
 
-// PREVIEW
+// ════════════ PREVIEW ════════════
 function updatePreviewSelect(){
   const sel=document.getElementById('preview-select');if(!sel)return;
   const pool=getTargetContacts().length?getTargetContacts():contacts;
@@ -764,79 +1111,156 @@ function updatePreview(){
   if(activeDesign==='texto'){iframe.style.display='none';pre.style.display='block';pre.textContent=body;}
   else{iframe.style.display='block';pre.style.display='none';iframe.srcdoc=body;}
 }
-function togglePreview(){const p=document.getElementById('preview-panel');p.style.display=p.style.display==='none'?'block':'none';if(p.style.display==='block')updatePreview();}
-function insertVar(fieldId,v){const el=document.getElementById(fieldId);const tag='{{'+v+'}}';const s=el.selectionStart;el.value=el.value.slice(0,s)+tag+el.value.slice(el.selectionEnd);el.selectionStart=el.selectionEnd=s+tag.length;el.focus();updatePreview();}
+function togglePreview(){
+  const p=document.getElementById('preview-panel');
+  p.style.display=p.style.display==='none'?'block':'none';
+  if(p.style.display==='block')updatePreview();
+}
+function insertVar(fieldId,v){
+  const el=document.getElementById(fieldId);
+  const tag='{{'+v+'}}';const s=el.selectionStart;
+  el.value=el.value.slice(0,s)+tag+el.value.slice(el.selectionEnd);
+  el.selectionStart=el.selectionEnd=s+tag.length;
+  el.focus();updatePreview();
+}
 
-// SEND
+// ════════════ SEND ════════════
 async function sendCampaign(){
-  if(!isConfigured()){toast('❌ Configura EmailJS primero','error');return;}
+  if(!isConfigured()){toast('❌ Configura EmailJS primero en Configuración','error');return;}
   const targets=getTargetContacts();
   if(!targets.length){toast('❌ No hay destinatarios para este filtro','error');return;}
   const asunto=document.getElementById('camp-asunto').value.trim();
   if(!asunto){toast('❌ El asunto es obligatorio','error');return;}
-  const campNombre=document.getElementById('camp-nombre').value||'Campaña';
+  const campNombre=document.getElementById('camp-nombre').value||'Campaña '+new Date().toLocaleDateString('es-CO');
+
+  if(!confirm(`¿Enviar campaña "${campNombre}" a ${targets.length} destinatarios?`))return;
+
   const sd=document.getElementById('send-status');
   sd.style.display='block';
-  sd.innerHTML=`<div style="background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px">
-    <div style="font-weight:700;margin-bottom:12px;font-size:13px">📨 Enviando a ${targets.length} destinatarios…</div>
-    <div id="prog-list">${targets.map(c=>`<div class="prog-item" id="prog-${c.id}"><span class="prog-icon"><span class="spinner"></span></span><span style="color:#666">${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span></div>`).join('')}</div>
+  sd.innerHTML=`<div style="background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px;max-height:300px;overflow-y:auto">
+    <div style="font-weight:700;margin-bottom:12px;font-size:13px;display:flex;justify-content:space-between">
+      <span>📨 Enviando a ${targets.length} destinatarios…</span>
+      <span id="prog-counter" style="font-family:var(--mono);color:var(--accent2)">0 / ${targets.length}</span>
+    </div>
+    <div id="prog-list">${targets.map(c=>`<div class="prog-item" id="prog-${c.id.toString().replace('.','_')}">
+      <span class="prog-icon"><span class="spinner"></span></span>
+      <span style="color:#666">${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span>
+    </div>`).join('')}</div>
   </div>`;
+
   document.getElementById('btn-send').disabled=true;
   emailjs.init({publicKey:config.pubkey});
   let ok=0,fail=0;
+
   for(const c of targets){
-    const el=document.getElementById('prog-'+c.id);
+    const eid='prog-'+c.id.toString().replace('.','_');
+    const el=document.getElementById(eid);
     try{
-      await emailjs.send(config.service,config.template,{to_email:c.email,to_name:c.nombre,subject:interp(asunto,c),message:getBody(c),from_name:config.fromName||'EOS Community'});
-      if(el)el.innerHTML=`<span class="prog-icon">✅</span><span>${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span>`;
-      // Si era inactivo habilitado, marcar como suscrito automáticamente
-      if(!c.eosActivo&&c.mailEstado==='habilitado'){contacts=contacts.map(x=>x.id===c.id?{...x,mailEstado:'suscrito'}:x);}
+      await emailjs.send(config.service,config.template,{
+        to_email:c.email, to_name:c.nombre,
+        subject:interp(asunto,c),
+        message:getBody(c),   // El template debe tener {{{message}}} con 3 llaves
+        from_name:config.fromName||'EOS Community',
+      });
+      if(el)el.innerHTML=`<span class="prog-icon">✅</span><span style="color:#7a9a7a">${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span>`;
+      if(!c.eosActivo&&c.mailEstado==='habilitado'){
+        contacts=contacts.map(x=>x.id===c.id?{...x,mailEstado:'suscrito'}:x);
+      }
       ok++;
     }catch(err){
-      if(el)el.innerHTML=`<span class="prog-icon">❌</span><span style="color:var(--red)">${esc(c.nombre)} — ${err.text||'error'}</span>`;
+      if(el)el.innerHTML=`<span class="prog-icon">❌</span><span style="color:var(--red)">${esc(c.nombre)} — ${err.text||err.message||'error'}</span>`;
       fail++;
     }
-    await delay(400);
+    document.getElementById('prog-counter').textContent=`${ok+fail} / ${targets.length}`;
+    await delay(450);
   }
+
   saveContacts();
-  campaigns.push({id:Date.now(),nombre:campNombre,asunto,enviados:ok,fallidos:fail,fecha:new Date().toLocaleDateString('es-CO'),objetivo:currentTarget});
-  localStorage.setItem('mb_v2_campaigns',JSON.stringify(campaigns));
-  sd.innerHTML+=`<div style="background:${ok>0?'#0a2518':'#280d0d'};border:1px solid ${ok>0?'#1a4731':'#4a1a1a'};border-radius:8px;padding:14px;font-weight:700;margin-top:12px;color:${ok>0?'var(--green)':'var(--red)'}">${ok>0?`🎉 ${ok} enviados`:''} ${fail>0?`· ❌ ${fail} fallidos`:''}</div>`;
+  campaigns.push({id:Date.now(),nombre:campNombre,asunto,enviados:ok,fallidos:fail,total:targets.length,fecha:new Date().toLocaleDateString('es-CO'),hora:new Date().toLocaleTimeString('es-CO'),objetivo:curTarget,modo:activeDesign});
+  localStorage.setItem('mb_v3_campaigns',JSON.stringify(campaigns));
+
+  sd.innerHTML+=`<div style="background:${ok>0?'#0a2518':'#280d0d'};border:1px solid ${ok>0?'#1a4731':'#4a1a1a'};border-radius:8px;padding:14px;font-weight:700;margin-top:12px;font-size:14px;color:${ok>0?'var(--green)':'var(--red)'}">
+    ${ok>0?`🎉 ${ok} emails enviados correctamente`:''} ${fail>0?`&nbsp;·&nbsp; ❌ ${fail} fallidos`:''}
+    ${fail>0?'<br><span style="font-size:11px;font-weight:400;color:#c08080">Verifica que el template tiene {{{message}}} con 3 llaves y Content type: HTML activado</span>':''}
+  </div>`;
+
   document.getElementById('btn-send').disabled=false;
-  renderAll();toast(`🚀 ${ok} enviados, ${fail} errores`);
+  renderAll();
+  toast(`🚀 Campaña enviada: ${ok} ok · ${fail} errores`);
 }
 
-// DASHBOARD
+// ════════════ DASHBOARD ════════════
 function renderDashboard(){
   const act=contacts.filter(c=>c.eosActivo).length;
   const ina=contacts.filter(c=>!c.eosActivo).length;
   const tot=contacts.length;
   const env=campaigns.reduce((a,c)=>a+(c.enviados||0),0);
-  document.getElementById('ds-activos').textContent=act;
-  document.getElementById('ds-inactivos').textContent=ina;
-  document.getElementById('ds-enviados').textContent=env;
-  document.getElementById('ds-campanas').textContent=campaigns.length;
+  document.getElementById('ds-act').textContent=act;
+  document.getElementById('ds-ina').textContent=ina;
+  document.getElementById('ds-env').textContent=env;
+  document.getElementById('ds-camp').textContent=campaigns.length;
+  document.getElementById('ds-act-n').textContent=act;
+  document.getElementById('ds-ina-n').textContent=ina;
+  document.getElementById('ds-tot-n').textContent=tot;
   const pct=tot?Math.round(act/tot*100):0;
   document.getElementById('bar-act').style.width=pct+'%';
   document.getElementById('bar-ina').style.width=(100-pct)+'%';
-  document.getElementById('ds-pct').textContent=tot?`${pct}% activos de ${tot} total`:'';
+  document.getElementById('ds-pct').textContent=tot?`${pct}% activos`:' ';
   const div=document.getElementById('dash-camps');
-  if(!campaigns.length){div.innerHTML='<p style="color:var(--muted);font-size:13px">Sin campañas.</p>';return;}
-  div.innerHTML=`<table><thead><tr><th>Nombre</th><th>Objetivo</th><th>Enviados</th><th>Fallidos</th><th>Fecha</th></tr></thead>
-  <tbody>${[...campaigns].reverse().slice(0,10).map(c=>`<tr>
-    <td class="bold">${esc(c.nombre)}</td>
-    <td><span class="badge b-habilitado">${c.objetivo||'todos'}</span></td>
-    <td style="color:var(--green)">${c.enviados}</td>
-    <td style="color:${c.fallidos>0?'var(--red)':'var(--muted)'}">${c.fallidos||0}</td>
-    <td class="mono">${c.fecha}</td>
-  </tr>`).join('')}</tbody></table>`;
+  if(!campaigns.length){div.innerHTML='<p style="color:var(--muted);font-size:13px">Sin campañas aún.</p>';return;}
+  div.innerHTML=`<div class="table-wrap"><table>
+    <thead><tr><th>Nombre</th><th>Objetivo</th><th>Enviados</th><th>Fallidos</th><th>Fecha</th><th>Hora</th></tr></thead>
+    <tbody>${[...campaigns].reverse().slice(0,8).map(c=>`<tr>
+      <td class="bold">${esc(c.nombre)}</td>
+      <td><span class="badge b-habilitado">${c.objetivo||'todos'}</span></td>
+      <td style="color:var(--green);font-weight:700">${c.enviados}</td>
+      <td style="color:${c.fallidos>0?'var(--red)':'var(--muted)'}">${c.fallidos||0}</td>
+      <td class="mono">${c.fecha}</td>
+      <td class="mono" style="color:var(--muted)">${c.hora||'—'}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
 }
+
+function renderHistorial(){
+  const div=document.getElementById('hist-content');
+  if(!campaigns.length){div.innerHTML='<p style="color:var(--muted);font-size:13px">Sin campañas en el historial.</p>';return;}
+  div.innerHTML=`<div class="table-wrap"><table>
+    <thead><tr><th>Nombre</th><th>Asunto</th><th>Objetivo</th><th>Total</th><th>✅ Ok</th><th>❌ Error</th><th>Modo</th><th>Fecha</th></tr></thead>
+    <tbody>${[...campaigns].reverse().map(c=>`<tr>
+      <td class="bold">${esc(c.nombre)}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.asunto)}</td>
+      <td><span class="badge b-habilitado">${c.objetivo||'todos'}</span></td>
+      <td class="mono">${c.total||c.enviados}</td>
+      <td style="color:var(--green);font-weight:700">${c.enviados}</td>
+      <td style="color:${c.fallidos>0?'var(--red)':'var(--muted)'}">${c.fallidos||0}</td>
+      <td style="font-size:11px;color:var(--muted)">${c.modo||'html'}</td>
+      <td class="mono">${c.fecha}</td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function clearCampaigns(){
+  if(!confirm('¿Limpiar todo el historial?'))return;
+  campaigns=[];localStorage.setItem('mb_v3_campaigns',JSON.stringify(campaigns));
+  renderHistorial();renderDashboard();toast('🗑 Historial limpiado','info');
+}
+
 function updateSidebarStats(){
-  document.getElementById('sb-activos').textContent=contacts.filter(c=>c.eosActivo).length;
-  document.getElementById('sb-inactivos').textContent=contacts.filter(c=>!c.eosActivo).length;
-  document.getElementById('sb-total').textContent=contacts.length;
-  document.getElementById('sb-enviados').textContent=campaigns.reduce((a,c)=>a+(c.enviados||0),0);
+  document.getElementById('sb-act').textContent=contacts.filter(c=>c.eosActivo).length;
+  document.getElementById('sb-ina').textContent=contacts.filter(c=>!c.eosActivo).length;
+  document.getElementById('sb-tot').textContent=contacts.length;
+  document.getElementById('sb-env').textContent=campaigns.reduce((a,c)=>a+(c.enviados||0),0);
 }
+
+function updateNavBadges(){
+  const tot=contacts.length;
+  const ina=contacts.filter(c=>!c.eosActivo).length;
+  const nb=document.getElementById('nb-total');
+  const ni=document.getElementById('nb-inact');
+  if(nb){nb.textContent=tot;nb.style.display=tot?'':'none';}
+  if(ni){ni.textContent=ina;ni.style.display=ina?'':'none';}
+}
+
 function updatePaisFilters(){
   const paises=[...new Set(contacts.map(c=>c.pais).filter(Boolean))].sort();
   ['s-pais','si-pais'].forEach(id=>{
@@ -846,44 +1270,79 @@ function updatePaisFilters(){
   });
 }
 
-// CONFIG
+// ════════════ CONFIG ════════════
 function loadConfig(){
   if(config.pubkey)   document.getElementById('cfg-pubkey').value=config.pubkey;
   if(config.service)  document.getElementById('cfg-service').value=config.service;
   if(config.template) document.getElementById('cfg-template').value=config.template;
   if(config.fromName) document.getElementById('cfg-fromname').value=config.fromName;
+  updateEjsBadge();
 }
 function saveConfig(){
-  config={pubkey:document.getElementById('cfg-pubkey').value.trim(),service:document.getElementById('cfg-service').value.trim(),template:document.getElementById('cfg-template').value.trim(),fromName:document.getElementById('cfg-fromname').value.trim()};
-  localStorage.setItem('mb_v2_config',JSON.stringify(config));
+  config={
+    pubkey:  document.getElementById('cfg-pubkey').value.trim(),
+    service: document.getElementById('cfg-service').value.trim(),
+    template:document.getElementById('cfg-template').value.trim(),
+    fromName:document.getElementById('cfg-fromname').value.trim(),
+  };
+  localStorage.setItem('mb_v3_config',JSON.stringify(config));
+  updateEjsBadge();
 }
-function isConfigured(){return config.pubkey&&config.service&&config.template;}
+function updateEjsBadge(){
+  const ok=isConfigured();
+  const dot=document.getElementById('ejs-dot');
+  const txt=document.getElementById('ejs-text');
+  if(dot){dot.className='ejs-dot'+(ok?' ok':'');}
+  if(txt)txt.textContent=ok?'EmailJS configurado ✓':'EmailJS no configurado';
+}
+function isConfigured(){return!!(config.pubkey&&config.service&&config.template);}
+
 async function testConfig(){
   const res=document.getElementById('test-res');
-  if(!isConfigured()){res.textContent='❌ Completa la config';res.style.color='var(--red)';return;}
-  res.textContent='⏳…';res.style.color='#aaa';
-  try{emailjs.init({publicKey:config.pubkey});await emailjs.send(config.service,config.template,{to_email:'prueba@prueba.com',to_name:'Prueba',subject:'✅ MailBot EOS OK',message:'Test OK',from_name:config.fromName||'MailBot'});res.textContent='✅ Enviado';res.style.color='var(--green)';}
-  catch(e){res.textContent='❌ '+(e.text||e.message);res.style.color='var(--red)';}
+  if(!isConfigured()){res.textContent='❌ Completa Public Key, Service ID y Template ID';res.style.color='var(--red)';return;}
+  const testEmail=document.getElementById('cfg-testemail').value.trim()||'prueba@prueba.com';
+  res.textContent='⏳ Enviando…';res.style.color='#aaa';
+  try{
+    emailjs.init({publicKey:config.pubkey});
+    // Email de prueba con HTML simple para verificar que llega con diseño
+    const testHtml=`<div style="background:#f0f0f8;padding:30px;font-family:sans-serif"><div style="max-width:500px;margin:0 auto;background:#fff;border-radius:12px;padding:30px;border-top:4px solid #6c4ef2"><h2 style="color:#6c4ef2;margin:0 0 16px">✅ MailBot EOS funciona</h2><p style="color:#444;font-size:15px;line-height:1.7">Si ves este email con diseño (fondo lila, título morado), tu template de EmailJS está configurado correctamente con {{{message}}} y Content type: HTML.</p><p style="color:#888;font-size:13px;margin-top:16px">Si solo ves texto plano, ve a emailjs.com → Email Templates → Body: <strong>{{{message}}}</strong> con 3 llaves → activa Content type: HTML.</p></div></div>`;
+    await emailjs.send(config.service,config.template,{
+      to_email:testEmail, to_name:'Test EOS',
+      subject:'✅ MailBot EOS — Prueba de HTML',
+      message:testHtml,
+      from_name:config.fromName||'MailBot EOS',
+    });
+    res.textContent='✅ Enviado a '+testEmail+'. Si llega con diseño, todo está bien.';
+    res.style.color='var(--green)';
+  }catch(e){
+    res.textContent='❌ Error: '+(e.text||e.message||'Verifica tus credenciales');
+    res.style.color='var(--red)';
+  }
 }
 
-// NAV
+// ════════════ NAV ════════════
 function goto(tab,el){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
-  el.classList.add('active');
-  const titles={dashboard:'Dashboard',contactos:'Contactos',inactivos:'⚠️ Inactivos',campana:'✉️ Campaña',config:'Configuración'};
+  if(el)el.classList.add('active');
+  const titles={dashboard:'Dashboard',contactos:'Contactos',inactivos:'⚠️ Inactivos',campana:'✉️ Campaña',historial:'📋 Historial',config:'⚙️ Configuración',ayuda:'❓ Ayuda'};
   document.getElementById('page-title').textContent=titles[tab]||tab;
   if(tab==='campana'){updatePreviewSelect();updateSendCount();updateTargetDescs();}
   if(tab==='dashboard')renderDashboard();
   if(tab==='contactos'){updatePaisFilters();renderContacts();}
   if(tab==='inactivos'){updatePaisFilters();renderInactivos();}
+  if(tab==='historial')renderHistorial();
 }
 
-// HELPERS
+// ════════════ HELPERS ════════════
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
-function toast(msg,type='success'){const t=document.getElementById('toast');t.textContent=msg;t.className=type;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>{t.style.display='none';},3800);}
+function toast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className=type;t.style.display='block';
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.style.display='none';},4000);
+}
 </script>
 </body>
 </html>
