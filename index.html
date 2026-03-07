@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MailBot EOS — Panel de Envíos</title>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<title>MailBot EOS — Panel de Envíos (Brevo)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
@@ -205,7 +204,7 @@ tr:hover td { background: #0f0f22; }
 #prev-iframe { width:100%; min-height:350px; border:none; background:#fff; display:block; border-radius:0 0 10px 10px; }
 #prev-pre { padding:18px; font-family:var(--mono); font-size:12px; color:#aaa; white-space:pre-wrap; line-height:1.8; min-height:200px; display:none; }
 
-/* ══ CALLOUT / CODE ══ */
+/* ══ CALL OUT / CODE ══ */
 .callout { background:#120d30; border:1px solid #3d2a7a; border-radius:10px; padding:16px 20px; margin-bottom:18px; font-size:13px; line-height:1.8; }
 .callout strong { color:var(--accent2); }
 .callout a { color:var(--accent2); }
@@ -232,16 +231,16 @@ input[type="color"] { height:40px; cursor:pointer; padding:4px 6px; }
 .tag-green { color:var(--green); font-family:var(--mono); font-size:11px; }
 .tag-yellow { color:var(--yellow); font-family:var(--mono); font-size:11px; }
 
-/* ══ FIX NOTICE ══ */
-.fix-banner { background:linear-gradient(135deg,#1e0a0a,#2a1010); border:1px solid #6a1a1a; border-radius:12px; padding:16px 20px; margin-bottom:20px; display:flex; gap:14px; align-items:flex-start; }
-.fix-banner .fb-icon { font-size:28px; flex-shrink:0; }
-.fix-banner h3 { color:var(--red); font-size:14px; margin-bottom:6px; }
-.fix-banner p { color:#c08080; font-size:13px; line-height:1.7; margin:0; }
-.fix-banner code { font-family:var(--mono); background:#3a1010; padding:2px 8px; border-radius:5px; color:#ffaaaa; font-size:12px; }
-.fix-steps { margin-top:10px; padding-left:4px; }
-.fix-steps li { color:#d08080; font-size:12px; line-height:1.8; list-style:none; padding-left:16px; position:relative; }
-.fix-steps li::before { content:'→'; position:absolute; left:0; color:#6a3030; }
-.fix-steps li strong { color:#ffaaaa; }
+/* ══ BREVO BANNER ══ */
+.brevo-banner { background:linear-gradient(135deg,#102a40,#1a3a5a); border:1px solid #2a5a8a; border-radius:12px; padding:16px 20px; margin-bottom:20px; display:flex; gap:14px; align-items:flex-start; }
+.brevo-banner .bb-icon { font-size:28px; flex-shrink:0; }
+.brevo-banner h3 { color:#5ab0ff; font-size:14px; margin-bottom:6px; }
+.brevo-banner p { color:#9ac0e0; font-size:13px; line-height:1.7; margin:0; }
+.brevo-banner code { font-family:var(--mono); background:#1a3a5a; padding:2px 8px; border-radius:5px; color:#b0e0ff; font-size:12px; }
+.brevo-steps { margin-top:10px; padding-left:4px; }
+.brevo-steps li { color:#9ac0e0; font-size:12px; line-height:1.8; list-style:none; padding-left:16px; position:relative; }
+.brevo-steps li::before { content:'→'; position:absolute; left:0; color:#3a6a9a; }
+.brevo-steps li strong { color:#b0e0ff; }
 
 @media (max-width:1000px) {
   aside { width:64px; min-width:64px; }
@@ -305,7 +304,7 @@ input[type="color"] { height:40px; cursor:pointer; padding:4px 6px; }
     </div>
     <div class="ejs-status">
       <div class="ejs-dot" id="ejs-dot"></div>
-      <span class="ejs-text" id="ejs-text">EmailJS no configurado</span>
+      <span class="ejs-text" id="ejs-text">Brevo no configurado</span>
     </div>
   </div>
 </aside>
@@ -352,22 +351,6 @@ input[type="color"] { height:40px; cursor:pointer; padding:4px 6px; }
 
     <!-- ══ CONTACTOS ══ -->
     <div class="tab" id="tab-contactos">
-
-      <!-- FIX NOTICE si hay problema -->
-      <div id="fix-notice" style="display:none" class="fix-banner">
-        <div class="fb-icon">🚨</div>
-        <div>
-          <h3>¿El email llega vacío? Solución aquí</h3>
-          <p>Tu template usa <code>{{html_message}}</code> — necesita <strong>3 llaves</strong>: <code>{{{html_message}}}</code> para que envíe HTML real.</p>
-          <ul class="fix-steps">
-            <li>Ve a <strong>emailjs.com → Email Templates</strong> → edita tu template</li>
-            <li>En el campo <strong>Content</strong> cambia <code>{{html_message}}</code> por <code>{{{html_message}}}</code></li>
-            <li>Activa la opción <strong>"Content type: HTML"</strong> en la pestaña Settings</li>
-            <li>Guarda → listo ✅</li>
-          </ul>
-        </div>
-      </div>
-
       <div class="card">
         <div class="card-title">📥 Importar desde Excel (XLSX) — EOS Community</div>
         <div class="drop-zone" id="drop-zone"
@@ -637,60 +620,62 @@ El equipo EOS Community</textarea>
       </div>
     </div>
 
-    <!-- ══ CONFIGURACIÓN ══ -->
+    <!-- ══ CONFIGURACIÓN (BREVO) ══ -->
     <div class="tab" id="tab-config">
 
-      <!-- BANNER FIX EMAIL VACÍO -->
-      <div class="fix-banner">
-        <div class="fb-icon">🔧</div>
+      <!-- BANNER BREVO -->
+      <div class="brevo-banner">
+        <div class="bb-icon">🐙</div>
         <div>
-          <h3>Solución: Email llega vacío en Gmail</h3>
-          <p>Tu template usa <code>{{html_message}}</code> con 2 llaves — eso escapa el HTML. Necesita <strong>3 llaves</strong> y Content type: HTML activado.</p>
-          <ul class="fix-steps" style="margin-top:8px">
-            <li>Ve a <strong>emailjs.com → Email Templates → edita tu template</strong></li>
-            <li>En el campo <strong>Content</strong> cambia <code>{{html_message}}</code> por <code>{{{html_message}}}</code></li>
-            <li>Ve a la pestaña <strong>Settings</strong> y activa <strong>"Content type: HTML"</strong></li>
-            <li>Haz clic en <strong>Save</strong> y vuelve a enviar</li>
+          <h3>✅ Brevo (ex Sendinblue) — 300 emails/día gratis</h3>
+          <p>Reemplazamos EmailJS porque NO renderizaba HTML en el plan gratuito. Brevo sí envía HTML completo.</p>
+          <ul class="brevo-steps" style="margin-top:8px">
+            <li>1. Crea cuenta en <strong>brevo.com</strong> → verifica tu email</li>
+            <li>2. Ve a <strong>Settings → API Keys</strong> → genera una nueva API Key</li>
+            <li>3. En <strong>Settings → Senders</strong> → verifica el email desde el que enviarás</li>
+            <li>4. Copia los datos abajo y haz la prueba</li>
           </ul>
         </div>
       </div>
 
-      <div class="callout">
-        <strong>🔑 Cómo obtener las credenciales (gratis · 200 emails/mes)</strong><br>
-        1. Crea cuenta en <a href="https://emailjs.com" target="_blank">emailjs.com</a><br>
-        2. <strong>Email Services</strong> → conecta tu Gmail → copia el <strong>Service ID</strong><br>
-        3. <strong>Email Templates</strong> → crea template → copia <strong>Template ID</strong><br>
-        4. <strong>Account → API Keys</strong> → copia tu <strong>Public Key</strong>
-      </div>
-
       <div class="card">
-        <div class="card-title">⚙️ Credenciales EmailJS</div>
-        <div class="field-row c3">
-          <div class="field"><label>Public Key</label><input id="cfg-pubkey" placeholder="tu_public_key" oninput="saveConfig()"></div>
-          <div class="field"><label>Service ID</label><input id="cfg-service" placeholder="service_v3m9ok2" oninput="saveConfig()"></div>
-          <div class="field"><label>Template ID</label><input id="cfg-template" placeholder="template_xxxxxxx" oninput="saveConfig()"></div>
+        <div class="card-title">🔑 Credenciales Brevo API</div>
+        <div class="field-row c2">
+          <div class="field"><label>API Key de Brevo</label><input id="cfg-apikey" placeholder="xkeysib-..." type="password" oninput="saveConfig()"></div>
+          <div class="field"><label>Email del remitente (verificado)</label><input id="cfg-fromemail" placeholder="tucorreo@verificado.com" oninput="saveConfig()"></div>
         </div>
         <div class="field"><label>Nombre del remitente</label><input id="cfg-fromname" placeholder="EOS Community" oninput="saveConfig()"></div>
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px">
           <button class="btn btn-primary" onclick="testConfig()">🧪 Enviar email de prueba a mí mismo</button>
           <input id="cfg-testemail" placeholder="tu@email.com para la prueba" style="max-width:260px">
           <span id="test-res" style="font-size:12px"></span>
         </div>
+        <p style="margin-top:16px;font-size:11px;color:var(--muted);font-family:var(--mono)">
+          ⚡ La API Key comienza con "xkeysib-". El email del remitente debe estar verificado en Brevo.
+        </p>
       </div>
 
-      <div class="card">
-        <div class="card-title">📋 Template correcto para EmailJS</div>
-        <p style="font-size:12px;color:#777;margin-bottom:12px">Crea un template en emailjs.com con <strong style="color:var(--red)">exactamente este contenido</strong>:</p>
-        <pre class="code-b">Subject:  {{subject}}
-To:       {{to_email}}
-Content:  {{{html_message}}}
-
-⚠️ Usa {{{html_message}}} con 3 llaves — así envía HTML real
-⚠️ Activa "Content type: HTML" en Settings del template</pre>
-        <div class="alert alert-ok" style="margin-top:14px">
-          <span class="alert-icon">✅</span>
-          <div><strong>¿Por qué 3 llaves?</strong><br><span style="font-size:12px;color:#7aaa8a">Con 2 llaves <code style="font-family:var(--mono)">{{message}}</code> EmailJS escapa el HTML y lo envía como texto plano (lo que ves en pantalla). Con 3 llaves <code style="font-family:var(--mono)">{{{message}}}</code> lo envía como HTML real con el diseño correcto.</span></div>
-        </div>
+      <div class="callout">
+        <strong>📧 Importante: Brevo vs EmailJS</strong><br>
+        <p style="margin-top:8px;font-size:13px">
+          EmailJS en plan gratuito <strong style="color:#ffaaaa">NO envía HTML real</strong> (solo el texto plano "Sent via EmailJS").<br>
+          Brevo <strong style="color:#aaffaa">SÍ envía el HTML completo</strong> con diseño, imágenes y estilos.
+        </p>
+        <pre class="code-b" style="margin-top:12px">// Ejemplo de llamada a Brevo (funciona)
+fetch('https://api.brevo.com/v3/smtp/email', {
+  method: 'POST',
+  headers: {
+    'api-key': 'xkeysib-...',
+    'content-type': 'application/json'
+  },
+  body: JSON.stringify({
+    sender: { name: 'EOS', email: 'tucorreo@verificado.com' },
+    to: [{ email: 'destino@email.com' }],
+    subject: 'Asunto',
+    htmlContent: '&lt;h1&gt;HTML real&lt;/h1&gt;'
+  })
+});</pre>
       </div>
     </div>
 
@@ -713,17 +698,17 @@ Content:  {{{html_message}}}
           <code style="font-family:var(--mono);font-size:12px;background:#0a0820;padding:2px 8px;border-radius:4px;color:#c4b5fd;margin-left:6px">{{pais}}</code>
           </p>
           <div class="sep"></div>
-          <p><strong style="color:#fff">5. GitHub / Publicar online</strong><br>Sube este archivo a <a href="https://github.com" style="color:var(--accent2)">GitHub</a> y activa <strong>GitHub Pages</strong> para tener una URL permanente. O arrastra el archivo a <a href="https://app.netlify.com/drop" style="color:var(--accent2)">Netlify Drop</a> para una URL instantánea.</p>
+          <p><strong style="color:#fff">5. Configuración Brevo</strong><br>Ve a <strong>Configuración</strong>, pega tu API Key de Brevo y el email verificado. Luego prueba con el botón "Email de prueba".</p>
         </div>
       </div>
 
       <div class="card">
         <div class="card-title">🔗 Links útiles</div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-          <a href="https://emailjs.com" target="_blank" style="display:block;background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
-            <div style="font-size:22px;margin-bottom:8px">📧</div>
-            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">EmailJS</div>
-            <div style="font-size:11px;color:var(--muted)">Configurar envíos</div>
+          <a href="https://brevo.com" target="_blank" style="display:block;background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+            <div style="font-size:22px;margin-bottom:8px">🐙</div>
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:4px">Brevo</div>
+            <div style="font-size:11px;color:var(--muted)">Obtener API Key</div>
           </a>
           <a href="https://app.netlify.com/drop" target="_blank" style="display:block;background:#0a0a18;border:1px solid var(--border);border-radius:10px;padding:16px;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
             <div style="font-size:22px;margin-bottom:8px">🚀</div>
@@ -1124,9 +1109,12 @@ function insertVar(fieldId,v){
   el.focus();updatePreview();
 }
 
-// ════════════ SEND ════════════
+// ════════════ SEND CAMPAIGN (BREVO) ════════════
 async function sendCampaign(){
-  if(!isConfigured()){toast('❌ Configura EmailJS primero en Configuración','error');return;}
+  if(!isConfigured()){
+    toast('❌ Configura Brevo primero en Configuración (API Key y email remitente)','error');
+    return;
+  }
   const targets=getTargetContacts();
   if(!targets.length){toast('❌ No hay destinatarios para este filtro','error');return;}
   const asunto=document.getElementById('camp-asunto').value.trim();
@@ -1149,55 +1137,72 @@ async function sendCampaign(){
   </div>`;
 
   document.getElementById('btn-send').disabled=true;
-  emailjs.init({publicKey:config.pubkey});
   let ok=0,fail=0;
 
   for(const c of targets){
     const eid='prog-'+c.id.toString().replace('.','_');
     const el=document.getElementById(eid);
     try{
-      const _body = getBody(c);
-      const _subj = interp(asunto, c);
-      // Envío directo via fetch a EmailJS API — soporta HTML sin depender del template
-      const _ejsRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      // Llamada a la API de Brevo
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'accept': 'application/json',
+          'api-key': config.apikey,
+          'content-type': 'application/json'
+        },
         body: JSON.stringify({
-          service_id:  config.service,
-          template_id: config.template,
-          user_id:     config.pubkey,
-          template_params: {
-            to_email:     c.email,
-            to_name:      c.nombre,
-            subject:      _subj,
-            html_message: _body,
-            message:      _body,
-            from_name:    config.fromName || 'EOS Community',
-            email:        c.email,
-          }
+          sender: { 
+            name: config.fromName || 'EOS Community', 
+            email: config.fromEmail 
+          },
+          to: [{ 
+            email: c.email, 
+            name: c.nombre 
+          }],
+          subject: interp(asunto, c),
+          htmlContent: getBody(c)
         })
       });
-      if (!_ejsRes.ok) { const _t = await _ejsRes.text(); throw new Error(_t || _ejsRes.statusText); }
+
+      if(!response.ok){
+        const errorData = await response.text();
+        throw new Error(`HTTP ${response.status}: ${errorData}`);
+      }
+
       if(el)el.innerHTML=`<span class="prog-icon">✅</span><span style="color:#7a9a7a">${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span>`;
-      if(!c.eosActivo&&c.mailEstado==='habilitado'){
-        contacts=contacts.map(x=>x.id===c.id?{...x,mailEstado:'suscrito'}:x);
+      
+      // Si era inactivo habilitado, pasar a suscrito
+      if(!c.eosActivo && c.mailEstado === 'habilitado'){
+        contacts = contacts.map(x => x.id === c.id ? {...x, mailEstado: 'suscrito'} : x);
       }
       ok++;
-    }catch(err){
-      if(el)el.innerHTML=`<span class="prog-icon">❌</span><span style="color:var(--red)">${esc(c.nombre)} — ${err.text||err.message||'error'}</span>`;
+    } catch(err){
+      console.error('Error Brevo:', err);
+      if(el)el.innerHTML=`<span class="prog-icon">❌</span><span style="color:var(--red)">${esc(c.nombre)} — ${err.message || 'Error'}</span>`;
       fail++;
     }
     document.getElementById('prog-counter').textContent=`${ok+fail} / ${targets.length}`;
-    await delay(450);
+    await delay(300); // Pequeña pausa para no saturar
   }
 
   saveContacts();
-  campaigns.push({id:Date.now(),nombre:campNombre,asunto,enviados:ok,fallidos:fail,total:targets.length,fecha:new Date().toLocaleDateString('es-CO'),hora:new Date().toLocaleTimeString('es-CO'),objetivo:curTarget,modo:activeDesign});
+  campaigns.push({
+    id:Date.now(),
+    nombre:campNombre,
+    asunto,
+    enviados:ok,
+    fallidos:fail,
+    total:targets.length,
+    fecha:new Date().toLocaleDateString('es-CO'),
+    hora:new Date().toLocaleTimeString('es-CO'),
+    objetivo:curTarget,
+    modo:activeDesign
+  });
   localStorage.setItem('mb_v3_campaigns',JSON.stringify(campaigns));
 
   sd.innerHTML+=`<div style="background:${ok>0?'#0a2518':'#280d0d'};border:1px solid ${ok>0?'#1a4731':'#4a1a1a'};border-radius:8px;padding:14px;font-weight:700;margin-top:12px;font-size:14px;color:${ok>0?'var(--green)':'var(--red)'}">
     ${ok>0?`🎉 ${ok} emails enviados correctamente`:''} ${fail>0?`&nbsp;·&nbsp; ❌ ${fail} fallidos`:''}
-    ${fail>0?'<br><span style="font-size:11px;font-weight:400;color:#c08080">Verifica que el template tiene {{{message}}} con 3 llaves y Content type: HTML activado</span>':''}
   </div>`;
 
   document.getElementById('btn-send').disabled=false;
@@ -1286,61 +1291,90 @@ function updatePaisFilters(){
   });
 }
 
-// ════════════ CONFIG ════════════
+// ════════════ CONFIG (BREVO) ════════════
 function loadConfig(){
-  if(config.pubkey)   document.getElementById('cfg-pubkey').value=config.pubkey;
-  if(config.service)  document.getElementById('cfg-service').value=config.service;
-  if(config.template) document.getElementById('cfg-template').value=config.template;
+  if(config.apikey)   document.getElementById('cfg-apikey').value=config.apikey;
+  if(config.fromEmail)  document.getElementById('cfg-fromemail').value=config.fromEmail;
   if(config.fromName) document.getElementById('cfg-fromname').value=config.fromName;
-  updateEjsBadge();
+  updateBrevoBadge();
 }
 function saveConfig(){
   config={
-    pubkey:  document.getElementById('cfg-pubkey').value.trim(),
-    service: document.getElementById('cfg-service').value.trim(),
-    template:document.getElementById('cfg-template').value.trim(),
-    fromName:document.getElementById('cfg-fromname').value.trim(),
+    apikey:   document.getElementById('cfg-apikey').value.trim(),
+    fromEmail: document.getElementById('cfg-fromemail').value.trim(),
+    fromName: document.getElementById('cfg-fromname').value.trim(),
   };
   localStorage.setItem('mb_v3_config',JSON.stringify(config));
-  updateEjsBadge();
+  updateBrevoBadge();
 }
-function updateEjsBadge(){
+function updateBrevoBadge(){
   const ok=isConfigured();
   const dot=document.getElementById('ejs-dot');
   const txt=document.getElementById('ejs-text');
   if(dot){dot.className='ejs-dot'+(ok?' ok':'');}
-  if(txt)txt.textContent=ok?'EmailJS configurado ✓':'EmailJS no configurado';
+  if(txt)txt.textContent=ok?'Brevo configurado ✓':'Brevo no configurado';
 }
-function isConfigured(){return!!(config.pubkey&&config.service&&config.template);}
+function isConfigured(){return !!(config.apikey && config.fromEmail);}
 
 async function testConfig(){
   const res=document.getElementById('test-res');
-  if(!isConfigured()){res.textContent='❌ Completa Public Key, Service ID y Template ID';res.style.color='var(--red)';return;}
-  const testEmail=document.getElementById('cfg-testemail').value.trim()||'prueba@prueba.com';
-  res.textContent='⏳ Enviando…';res.style.color='#aaa';
+  if(!isConfigured()){
+    res.textContent='❌ Completa API Key y email remitente';
+    res.style.color='var(--red)';
+    return;
+  }
+  const testEmail=document.getElementById('cfg-testemail').value.trim();
+  if(!testEmail){
+    res.textContent='❌ Escribe un email para la prueba';
+    res.style.color='var(--red)';
+    return;
+  }
+  
+  res.textContent='⏳ Enviando…';
+  res.style.color='#aaa';
+  
   try{
-    const testHtml=`<div style="background:#f0f0f8;padding:30px;font-family:sans-serif"><div style="max-width:500px;margin:0 auto;background:#fff;border-radius:12px;padding:30px;border-top:4px solid #6c4ef2"><h2 style="color:#6c4ef2;margin:0 0 16px">✅ MailBot EOS funciona</h2><p style="color:#444;font-size:15px;line-height:1.7">Si ves este email <strong>con fondo y diseño</strong>, todo está funcionando correctamente.</p></div></div>`;
-    const _testRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    const testHtml = `<div style="background:#f0f0f8;padding:30px;font-family:sans-serif">
+      <div style="max-width:500px;margin:0 auto;background:#fff;border-radius:12px;padding:30px;border-top:4px solid #6c4ef2">
+        <h2 style="color:#6c4ef2;margin:0 0 16px">✅ MailBot EOS con Brevo funciona</h2>
+        <p style="color:#444;font-size:15px;line-height:1.7">Este es un email de prueba enviado <strong>con Brevo</strong>.</p>
+        <p style="color:#444;font-size:15px;line-height:1.7">Si ves este diseño completo, la configuración es correcta.</p>
+        <p style="color:#888;font-size:13px;margin-top:16px">¡Ahora puedes enviar campañas con HTML real!</p>
+      </div>
+    </div>`;
+
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers: {
+        'accept': 'application/json',
+        'api-key': config.apikey,
+        'content-type': 'application/json'
+      },
       body: JSON.stringify({
-        service_id: config.service,
-        template_id: config.template,
-        user_id: config.pubkey,
-        template_params: {
-          to_email: testEmail, to_name: 'Test EOS',
-          subject: '✅ MailBot EOS — Prueba de HTML',
-          html_message: testHtml, message: testHtml,
-          from_name: config.fromName||'MailBot EOS', email: testEmail,
-        }
+        sender: { 
+          name: config.fromName || 'MailBot EOS', 
+          email: config.fromEmail 
+        },
+        to: [{ 
+          email: testEmail, 
+          name: 'Test EOS' 
+        }],
+        subject: '✅ Prueba MailBot EOS con Brevo',
+        htmlContent: testHtml
       })
     });
-    if (!_testRes.ok) { const _t = await _testRes.text(); throw new Error(_t); }
-    res.textContent='✅ Enviado a '+testEmail+'. Si llega con diseño, todo está bien.';
-    res.style.color='var(--green)';
-  }catch(e){
-    res.textContent='❌ Error: '+(e.text||e.message||'Verifica tus credenciales');
-    res.style.color='var(--red)';
+
+    if(!response.ok){
+      const errorData = await response.text();
+      throw new Error(`HTTP ${response.status}: ${errorData}`);
+    }
+
+    res.textContent = '✅ Enviado correctamente a ' + testEmail + ' (revisa tu bandeja)';
+    res.style.color = 'var(--green)';
+  } catch(e){
+    console.error('Error test Brevo:', e);
+    res.textContent = '❌ Error: ' + (e.message || 'Error de conexión');
+    res.style.color = 'var(--red)';
   }
 }
 
@@ -1350,7 +1384,7 @@ function goto(tab,el){
   document.querySelectorAll('nav a').forEach(a=>a.classList.remove('active'));
   document.getElementById('tab-'+tab).classList.add('active');
   if(el)el.classList.add('active');
-  const titles={dashboard:'Dashboard',contactos:'Contactos',inactivos:'⚠️ Inactivos',campana:'✉️ Campaña',historial:'📋 Historial',config:'⚙️ Configuración',ayuda:'❓ Ayuda'};
+  const titles={dashboard:'Dashboard',contactos:'Contactos',inactivos:'⚠️ Inactivos',campana:'✉️ Campaña',historial:'📋 Historial',config:'⚙️ Configuración (Brevo)',ayuda:'❓ Ayuda'};
   document.getElementById('page-title').textContent=titles[tab]||tab;
   if(tab==='campana'){updatePreviewSelect();updateSendCount();updateTargetDescs();}
   if(tab==='dashboard')renderDashboard();
