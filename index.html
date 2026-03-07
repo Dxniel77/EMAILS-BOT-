@@ -358,12 +358,12 @@ input[type="color"] { height:40px; cursor:pointer; padding:4px 6px; }
         <div class="fb-icon">🚨</div>
         <div>
           <h3>¿El email llega vacío? Solución aquí</h3>
-          <p>El template de EmailJS necesita <code>{{{message}}}</code> (3 llaves) con Content type: HTML activado.</p>
+          <p>Tu template usa <code>{{html_message}}</code> — necesita <strong>3 llaves</strong>: <code>{{{html_message}}}</code> para que envíe HTML real.</p>
           <ul class="fix-steps">
             <li>Ve a <strong>emailjs.com → Email Templates</strong> → edita tu template</li>
-            <li>En el campo Body escribe: <code>{{{message}}}</code></li>
-            <li>Activa la opción <strong>"Content type: HTML"</strong></li>
-            <li>Guarda y vuelve a intentar</li>
+            <li>En el campo <strong>Content</strong> cambia <code>{{html_message}}</code> por <code>{{{html_message}}}</code></li>
+            <li>Activa la opción <strong>"Content type: HTML"</strong> en la pestaña Settings</li>
+            <li>Guarda → listo ✅</li>
           </ul>
         </div>
       </div>
@@ -645,11 +645,11 @@ El equipo EOS Community</textarea>
         <div class="fb-icon">🔧</div>
         <div>
           <h3>Solución: Email llega vacío en Gmail</h3>
-          <p>Este es el problema más común con EmailJS. El template debe usar <code>{{{message}}}</code> con <strong>3 llaves</strong> (no 2) y tener <strong>Content type: HTML</strong> activado.</p>
+          <p>Tu template usa <code>{{html_message}}</code> con 2 llaves — eso escapa el HTML. Necesita <strong>3 llaves</strong> y Content type: HTML activado.</p>
           <ul class="fix-steps" style="margin-top:8px">
             <li>Ve a <strong>emailjs.com → Email Templates → edita tu template</strong></li>
-            <li>En el campo <strong>Body / Content</strong> escribe: <code>{{{message}}}</code></li>
-            <li>En opciones del template activa <strong>"Content type: HTML"</strong></li>
+            <li>En el campo <strong>Content</strong> cambia <code>{{html_message}}</code> por <code>{{{html_message}}}</code></li>
+            <li>Ve a la pestaña <strong>Settings</strong> y activa <strong>"Content type: HTML"</strong></li>
             <li>Haz clic en <strong>Save</strong> y vuelve a enviar</li>
           </ul>
         </div>
@@ -681,12 +681,12 @@ El equipo EOS Community</textarea>
       <div class="card">
         <div class="card-title">📋 Template correcto para EmailJS</div>
         <p style="font-size:12px;color:#777;margin-bottom:12px">Crea un template en emailjs.com con <strong style="color:var(--red)">exactamente este contenido</strong>:</p>
-        <pre class="code-b">To:       {{to_email}}
-Subject:  {{subject}}
-Body:     {{{message}}}
+        <pre class="code-b">Subject:  {{subject}}
+To:       {{to_email}}
+Content:  {{{html_message}}}
 
-⚠️ IMPORTANTE: Usa {{{message}}} con 3 llaves para HTML
-⚠️ Activa "Content type: HTML" en las opciones del template</pre>
+⚠️ Usa {{{html_message}}} con 3 llaves — así envía HTML real
+⚠️ Activa "Content type: HTML" en Settings del template</pre>
         <div class="alert alert-ok" style="margin-top:14px">
           <span class="alert-icon">✅</span>
           <div><strong>¿Por qué 3 llaves?</strong><br><span style="font-size:12px;color:#7aaa8a">Con 2 llaves <code style="font-family:var(--mono)">{{message}}</code> EmailJS escapa el HTML y lo envía como texto plano (lo que ves en pantalla). Con 3 llaves <code style="font-family:var(--mono)">{{{message}}}</code> lo envía como HTML real con el diseño correcto.</span></div>
@@ -1156,12 +1156,28 @@ async function sendCampaign(){
     const eid='prog-'+c.id.toString().replace('.','_');
     const el=document.getElementById(eid);
     try{
-      await emailjs.send(config.service,config.template,{
-        to_email:c.email, to_name:c.nombre,
-        subject:interp(asunto,c),
-        message:getBody(c),   // El template debe tener {{{message}}} con 3 llaves
-        from_name:config.fromName||'EOS Community',
+      const _body = getBody(c);
+      const _subj = interp(asunto, c);
+      // Envío directo via fetch a EmailJS API — soporta HTML sin depender del template
+      const _ejsRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          service_id:  config.service,
+          template_id: config.template,
+          user_id:     config.pubkey,
+          template_params: {
+            to_email:     c.email,
+            to_name:      c.nombre,
+            subject:      _subj,
+            html_message: _body,
+            message:      _body,
+            from_name:    config.fromName || 'EOS Community',
+            email:        c.email,
+          }
+        })
       });
+      if (!_ejsRes.ok) { const _t = await _ejsRes.text(); throw new Error(_t || _ejsRes.statusText); }
       if(el)el.innerHTML=`<span class="prog-icon">✅</span><span style="color:#7a9a7a">${esc(c.nombre)} &lt;${esc(c.email)}&gt;</span>`;
       if(!c.eosActivo&&c.mailEstado==='habilitado'){
         contacts=contacts.map(x=>x.id===c.id?{...x,mailEstado:'suscrito'}:x);
@@ -1303,15 +1319,23 @@ async function testConfig(){
   const testEmail=document.getElementById('cfg-testemail').value.trim()||'prueba@prueba.com';
   res.textContent='⏳ Enviando…';res.style.color='#aaa';
   try{
-    emailjs.init({publicKey:config.pubkey});
-    // Email de prueba con HTML simple para verificar que llega con diseño
-    const testHtml=`<div style="background:#f0f0f8;padding:30px;font-family:sans-serif"><div style="max-width:500px;margin:0 auto;background:#fff;border-radius:12px;padding:30px;border-top:4px solid #6c4ef2"><h2 style="color:#6c4ef2;margin:0 0 16px">✅ MailBot EOS funciona</h2><p style="color:#444;font-size:15px;line-height:1.7">Si ves este email con diseño (fondo lila, título morado), tu template de EmailJS está configurado correctamente con {{{message}}} y Content type: HTML.</p><p style="color:#888;font-size:13px;margin-top:16px">Si solo ves texto plano, ve a emailjs.com → Email Templates → Body: <strong>{{{message}}}</strong> con 3 llaves → activa Content type: HTML.</p></div></div>`;
-    await emailjs.send(config.service,config.template,{
-      to_email:testEmail, to_name:'Test EOS',
-      subject:'✅ MailBot EOS — Prueba de HTML',
-      message:testHtml,
-      from_name:config.fromName||'MailBot EOS',
+    const testHtml=`<div style="background:#f0f0f8;padding:30px;font-family:sans-serif"><div style="max-width:500px;margin:0 auto;background:#fff;border-radius:12px;padding:30px;border-top:4px solid #6c4ef2"><h2 style="color:#6c4ef2;margin:0 0 16px">✅ MailBot EOS funciona</h2><p style="color:#444;font-size:15px;line-height:1.7">Si ves este email <strong>con fondo y diseño</strong>, todo está funcionando correctamente.</p></div></div>`;
+    const _testRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        service_id: config.service,
+        template_id: config.template,
+        user_id: config.pubkey,
+        template_params: {
+          to_email: testEmail, to_name: 'Test EOS',
+          subject: '✅ MailBot EOS — Prueba de HTML',
+          html_message: testHtml, message: testHtml,
+          from_name: config.fromName||'MailBot EOS', email: testEmail,
+        }
+      })
     });
+    if (!_testRes.ok) { const _t = await _testRes.text(); throw new Error(_t); }
     res.textContent='✅ Enviado a '+testEmail+'. Si llega con diseño, todo está bien.';
     res.style.color='var(--green)';
   }catch(e){
